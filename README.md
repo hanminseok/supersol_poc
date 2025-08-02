@@ -42,10 +42,18 @@ pip install -r requirements.txt
    cp env.example .env
    ```
 
-2. `.env` 파일에서 API 키를 설정:
+2. `.env` 파일에서 API 키와 설정을 수정:
    ```bash
+   # API Keys (필수)
    OPENAI_API_KEY=your_openai_api_key_here
    DEEPINFRA_API_KEY=your_deepinfra_api_key_here
+   
+   # 서버 설정 (선택사항)
+   HOST=0.0.0.0
+   PORT=8000
+   
+   # 로깅 설정 (선택사항)
+   LOG_LEVEL=INFO
    ```
 
 ### 3. 서버 실행

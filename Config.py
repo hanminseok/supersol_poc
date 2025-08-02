@@ -1,8 +1,15 @@
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-# .env 파일 로드
-load_dotenv()
+# .env 파일 경로 설정
+env_path = Path(__file__).parent / '.env'
+if env_path.exists():
+    load_dotenv(env_path)
+    print(f"Loaded environment variables from: {env_path}")
+else:
+    print(f"Warning: .env file not found at {env_path}")
+    print("Please copy env.example to .env and configure your settings")
 
 class Config:
     # API Keys
