@@ -126,6 +126,9 @@ ver0.2/
 ├── utils/                 # 유틸리티
 │   ├── logger.py          # 로깅 시스템
 │   └── __init__.py
+├── tests/                 # 테스트 코드
+│   ├── test_agent_communication.py # Agent JSON 통신 테스트
+│   └── __init__.py
 ├── sessions/              # 세션 데이터 (자동 생성)
 ├── logs/                  # 로그 파일 (자동 생성)
 ├── Config.py              # 환경 설정 파일
@@ -165,6 +168,17 @@ curl "http://localhost:8000/sessions"
 1. `tools/` 디렉토리에 도구 구현
 2. `models/agent_config.py`의 도구 목록에 추가
 3. `agents/domain_agent.py`에서 도구 선택 로직 수정
+
+## 테스트 실행
+
+```bash
+# Agent JSON 통신 테스트 실행
+python tests/test_agent_communication.py
+
+# 가상환경에서 실행
+source venv/bin/activate
+python tests/test_agent_communication.py
+```
 
 ## 로그 확인
 

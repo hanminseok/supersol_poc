@@ -55,6 +55,14 @@ class SupervisorAgent(BaseAgent):
                 "missing_slots": []
             }
         
+        # 필수 키들이 없으면 기본값 설정
+        if "status_history" not in context:
+            context["status_history"] = []
+        if "agent_call_history" not in context:
+            context["agent_call_history"] = []
+        if "missing_slots" not in context:
+            context["missing_slots"] = []
+        
         # 현재 상태 기록
         context["status_history"].append(f"supervisor_processing_{input_data.get('intent', 'unknown')}")
         context["agent_call_history"].append({

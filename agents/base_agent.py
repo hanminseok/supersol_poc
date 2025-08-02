@@ -18,7 +18,19 @@ class BaseAgent(ABC):
     def _setup_client(self):
         """API 클라이언트 설정"""
         if self.config.model_provider == "openai":
-            self.client = openai.OpenAI(api_key=Config.OPENAI_API_KEY)
+            # OpenAI 클라이언트 설정
+            try:
+                self.client = openai.OpenAI(api_key=Config.OPENAI_API_KEY)
+            except TypeError as e:
+                if "proxies" in str(e):
+                    # httpx 버전 호환성 문제 해결
+                    import httpx
+                    self.client = openai.OpenAI(
+                        api_key=Config.OPENAI_API_KEY,
+                        http_client=httpx.Client()
+                    )
+                else:
+                    raise e
         elif self.config.model_provider == "deepinfra":
             self.client = deepinfra.Client(api_token=Config.DEEPINFRA_API_KEY)
         else:
@@ -62,26 +74,69 @@ class BaseAgent(ABC):
                     raise e
     
     def _validate_input(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """입력 데이터 검증"""
+        """입력 데이터 검증 - 개선된 버전"""
+        if not isinstance(input_data, dict):
+            raise ValueError("Input data must be a dictionary")
+        
         if self.config.input_format:
-            # 기본 검증 로직 (실제로는 더 복잡한 검증이 필요)
-            required_fields = list(self.config.input_format.schema.keys())
-            for field in required_fields:
-                if field not in input_data:
-                    raise ValueError(f"Missing required field: {field}")
+            schema = self.config.input_format.schema
+            self._validate_schema(input_data, schema, "input")
         
         return input_data
     
     def _validate_output(self, output_data: Dict[str, Any]) -> Dict[str, Any]:
-        """출력 데이터 검증"""
+        """출력 데이터 검증 - 개선된 버전"""
+        if not isinstance(output_data, dict):
+            raise ValueError("Output data must be a dictionary")
+        
         if self.config.output_format:
-            # 기본 검증 로직 (실제로는 더 복잡한 검증이 필요)
-            required_fields = list(self.config.output_format.schema.keys())
-            for field in required_fields:
-                if field not in output_data:
-                    raise ValueError(f"Missing required output field: {field}")
+            schema = self.config.output_format.schema
+            self._validate_schema(output_data, schema, "output")
         
         return output_data
+    
+    def _validate_schema(self, data: Dict[str, Any], schema: Dict[str, Any], data_type: str):
+        """스키마 검증 - 재귀적으로 중첩 구조 검증"""
+        for field_name, field_schema in schema.items():
+            if field_name not in data:
+                raise ValueError(f"Missing required {data_type} field: {field_name}")
+            
+            field_value = data[field_name]
+            self._validate_field(field_value, field_schema, f"{data_type}.{field_name}")
+    
+    def _validate_field(self, value: Any, schema: Any, field_path: str):
+        """필드 값 검증"""
+        if isinstance(schema, list):
+            # 리스트 타입 검증
+            if not isinstance(value, list):
+                raise ValueError(f"Field {field_path} must be a list")
+            
+            if len(schema) > 0:
+                # 리스트 내 요소 타입 검증
+                element_schema = schema[0]
+                for i, element in enumerate(value):
+                    self._validate_field(element, element_schema, f"{field_path}[{i}]")
+        
+        elif isinstance(schema, dict):
+            # 객체 타입 검증
+            if not isinstance(value, dict):
+                raise ValueError(f"Field {field_path} must be a dictionary")
+            
+            for key, val in value.items():
+                if key in schema:
+                    self._validate_field(val, schema[key], f"{field_path}.{key}")
+        
+        elif schema == "string":
+            if not isinstance(value, str):
+                raise ValueError(f"Field {field_path} must be a string")
+        
+        elif schema == "int":
+            if not isinstance(value, int):
+                raise ValueError(f"Field {field_path} must be an integer")
+        
+        elif schema == "object":
+            if not isinstance(value, dict):
+                raise ValueError(f"Field {field_path} must be an object")
     
     async def _call_llm(self, messages: List[Dict[str, str]], stream: bool = False):
         """LLM 호출"""

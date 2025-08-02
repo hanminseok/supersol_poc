@@ -30,54 +30,92 @@ class RewritingAgent(BaseAgent):
         
         response = await self._call_llm(messages)
         
-        # JSON 응답 파싱
+        # JSON 응답 파싱 - 개선된 버전
+        result = self._parse_json_response(response, input_data)
+        
+        # 출력 데이터 로깅
+        self.logger.info(f"=== {self.config.name} Output ===")
+        self.logger.info(f"Result: {result}")
+        
+        return result
+    
+    def _parse_json_response(self, response: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """JSON 응답 파싱 - 개선된 버전"""
+        if not response or response.strip() == "":
+            self.logger.warning(f"Empty response from {self.config.name}")
+            return self._create_default_response(input_data)
+        
+        # JSON 블록 추출 시도
+        json_response = self._extract_json_from_response(response)
+        
         try:
-            # 응답이 비어있는지 확인
-            if not response or response.strip() == "":
-                self.logger.warning(f"Empty response from {self.config.name}")
-                return {
-                    "rewritten_text": "질문을 이해하지 못했습니다. 다시 말씀해 주세요.",
-                    "topic": "general"
-                }
+            result = json.loads(json_response)
             
-            # JSON 파싱 시도
-            result = json.loads(response.strip())
-            
-            # 필수 필드 확인
+            # 필수 필드 확인 및 기본값 설정
             rewritten_text = result.get("rewritten_text", "")
             topic = result.get("topic", "general")
             
             if not rewritten_text:
                 self.logger.warning(f"Empty rewritten_text in response from {self.config.name}")
-                return {
-                    "rewritten_text": "질문을 이해하지 못했습니다. 다시 말씀해 주세요.",
-                    "topic": topic
-                }
+                return self._create_default_response(input_data, topic)
             
-            result = {
+            return {
                 "rewritten_text": rewritten_text,
                 "topic": topic
             }
             
-            # 출력 데이터 로깅
-            self.logger.info(f"=== {self.config.name} Output ===")
-            self.logger.info(f"Result: {result}")
-            
-            return result
-            
         except json.JSONDecodeError as e:
             self.logger.error(f"Failed to parse JSON response from {self.config.name}: {str(e)}")
             self.logger.error(f"Raw response: {response}")
-            
-            # 기본 응답 생성 - 원본 질문을 그대로 사용
-            original_query = input_data.get("query", "")
-            if isinstance(original_query, list):
-                original_query = " ".join(original_query)
-            
-            return {
-                "rewritten_text": original_query if original_query else "질문을 이해하지 못했습니다.",
-                "topic": "general"
-            }
+            return self._create_default_response(input_data)
+    
+    def _extract_json_from_response(self, response: str) -> str:
+        """응답에서 JSON 블록 추출"""
+        response = response.strip()
+        
+        # JSON 블록이 ```json ... ``` 형태로 감싸져 있는 경우
+        if "```json" in response and "```" in response:
+            start = response.find("```json") + 7
+            end = response.find("```", start)
+            if end != -1:
+                return response[start:end].strip()
+        
+        # JSON 블록이 ``` ... ``` 형태로 감싸져 있는 경우
+        if "```" in response:
+            start = response.find("```") + 3
+            end = response.find("```", start)
+            if end != -1:
+                return response[start:end].strip()
+        
+        # 중괄호로 시작하고 끝나는 JSON 찾기
+        if response.startswith("{") and response.endswith("}"):
+            return response
+        
+        # 중괄호로 시작하는 부분 찾기
+        start = response.find("{")
+        if start != -1:
+            # 중괄호 카운팅으로 JSON 끝 찾기
+            brace_count = 0
+            for i, char in enumerate(response[start:], start):
+                if char == "{":
+                    brace_count += 1
+                elif char == "}":
+                    brace_count -= 1
+                    if brace_count == 0:
+                        return response[start:i+1]
+        
+        return response
+    
+    def _create_default_response(self, input_data: Dict[str, Any], topic: str = "general") -> Dict[str, Any]:
+        """기본 응답 생성"""
+        original_query = input_data.get("query", "")
+        if isinstance(original_query, list):
+            original_query = " ".join(original_query)
+        
+        return {
+            "rewritten_text": original_query if original_query else "질문을 이해하지 못했습니다.",
+            "topic": topic
+        }
     
     def _build_context_prompt(self, query: list, context: Optional[Dict[str, Any]] = None) -> str:
         """컨텍스트를 포함한 프롬프트 생성"""
