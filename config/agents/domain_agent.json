@@ -1,0 +1,50 @@
+{
+    "name": "domain_agent",
+    "type": "domain",
+    "description": "특정 도메인의 요청을 처리하고 적절한 도구를 선택하는 에이전트",
+    "prompt": "당신은 특정 도메인의 요청을 처리하고 적절한 도구를 선택하여 실행하는 전문가입니다.",
+    "role": "도메인 전문가",
+    "next_agent": ["tools"],
+    "model": "gpt-4",
+    "model_provider": "openai",
+    "temperature": 0.3,
+    "language": "ko",
+    "style": "formal",
+    "max_retries": 3,
+    "retry_delay": 1,
+    "retry_delay_max": 10,
+    "retry_delay_min": 1,
+    "tool_list": ["account_balance", "transfer_money", "loan_info", "investment_info"],
+    "input_format": {
+        "type": "json",
+        "schema": {
+            "normalized_text": "string",
+            "intent": "string",
+            "slot": ["string"]
+        },
+        "context": {
+            "session_id": "string",
+            "depth": "int",
+            "current_step": "string",
+            "status_history": ["string"],
+            "agent_call_history": [{"agent_name": "string", "status": "string"}],
+            "missing_slots": ["string"]
+        }
+    },
+    "output_format": {
+        "type": "json",
+        "schema": {
+            "tool_name": "string",
+            "tool_input": "object",
+            "tool_output": "object",
+            "context": {
+                "session_id": "string",
+                "depth": "int",
+                "current_step": "string",
+                "status_history": ["string"],
+                "agent_call_history": [{"agent_name": "string", "status": "string"}],
+                "missing_slots": ["string"]
+            }
+        }
+    }
+} 

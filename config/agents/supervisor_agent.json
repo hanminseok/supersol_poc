@@ -1,0 +1,68 @@
+{
+    "name": "supervisor_agent",
+    "type": "supervisor",
+    "description": "질문을 분석하고 적절한 도메인 에이전트로 라우팅하는 에이전트",
+    "prompt": "당신은 사용자의 질문을 분석하고 적절한 도메인 에이전트로 라우팅하는 관리자입니다.",
+    "role": "에이전트 관리자",
+    "next_agent": ["domain"],
+    "model": "gpt-4",
+    "model_provider": "openai",
+    "temperature": 0.1,
+    "language": "ko",
+    "style": "formal",
+    "max_retries": 3,
+    "retry_delay": 1,
+    "retry_delay_max": 10,
+    "retry_delay_min": 1,
+    "domain_list": ["banking", "account", "loan", "investment", "general"],
+    "input_format": {
+        "type": "json",
+        "schema": {
+            "normalized_text": "string",
+            "intent": "string",
+            "slot": ["string"]
+        },
+        "context": {
+            "session_id": "string",
+            "depth": "int",
+            "current_step": "string",
+            "status_history": ["string"],
+            "agent_call_history": [{"agent_name": "string", "status": "string"}],
+            "missing_slots": ["string"]
+        }
+    },
+    "output_format": {
+        "type": "json",
+        "schema": {
+            "target_domain": "string",
+            "normalized_text": "string",
+            "intent": "string",
+            "slot": ["string"]
+        },
+        "context": {
+            "session_id": "string",
+            "depth": "int",
+            "current_step": "string",
+            "status_history": ["string"],
+            "agent_call_history": [{"agent_name": "string", "status": "string"}],
+            "missing_slots": ["string"]
+        }
+    },
+    "fallback_strategy": {
+        "max_context_depth": 3,
+        "missing_input": {
+            "check_tool_availability": true,
+            "if_available": "call_tool",
+            "if_unavailable": "ask_user"
+        },
+        "tool_failure": {
+            "retry_on_failure": true,
+            "max_retries": 2,
+            "fallback_action": "ask_user"
+        },
+        "no_tool_found": {
+            "llm_fallback": true,
+            "log_intent_tool_pair": true
+        }
+    }
+} 

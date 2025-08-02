@@ -1,0 +1,236 @@
+# SuperSOL 은행 채팅 서비스 - Cursor 개발 규칙
+
+## 프로젝트 개요
+- 은행 앱 내 고객 지원을 위한 Multi Agent 기반 채팅 서비스
+
+## 프로젝트 환경
+- github 저장소: https://github.com/hanminseok/supersol_poc.git
+- 프로젝트 루트 디렉토리: SuperSOL/ver0.2
+- SuperSOL/ver0.1은 참고하지 않음
+- Python 가상환경: solenv (위치: SuperSOL/solenv)
+- 모든 환경변수는 Config.py에 정의
+- API 키 (openai, deepinfra)
+  - OPENAI_API_KEY=환경변수로 설정
+  - DEEPINFRA_API_KEY=환경변수로 설정
+
+## 서비스 요구사항
+- 채팅 서비스 기능 구현
+  - Multi turn 가능
+    - Multi turn을 위해 Session 별 대화 내역을 파일로 저장
+    - 대화 내역은 최대 100개까지 저장
+  - 스트리밍으로 대답을 해주어야 함
+    - 질문에 대한 답변은 두가지 textbox에서 이루어짐
+        - 응답 Textbox : 질문에 대한 답변을 해주어야 함
+        - Agent Textbox : Agent의 Input output 로그를 보여주어야 함
+- 특정 고객임을 선택하여 채팅을 시작할 수 있어야 함
+
+## 로깅 시스템
+### 로거 클래스 구성
+- Console handler 1개, File hanler 2개
+    - Console handler는 모든 로그를 콘솔에 출력
+    - File handler는 로그를 파일에 출력
+        - Agent I/O 로깅: Agent_log_{%Y%m%d}.log (일일 로테이션)
+            - LLM의 입출력 로그만 파일에 기록
+        - 서비스 로깅: Service_log_{%Y%m%d}.log (일일 로테이션)
+            - 모든 Console 로그를 파일에 출력
+            - Error 및 Exception 발생 시 traceback 출력
+- 로그 형식: "%(asctime)s [%(levelname)-8s][%(name)-15s] %(message)s"
+- 날짜 형식: "%Y-%m-%d %H:%M:%S"
+
+## Multi Agent 
+### 구성
+1. rewriting agent
+2. preprocessing agent
+3. supervisor agent
+4. domain agent
+5. tools
+
+### 채팅 프로세스
+1. 사용자가 질문을 입력
+2. rewriting agent는 Session 별 대화 내역을 참고하여 질문을 재작성. 재작성된 질문과 Topic을 preprocessing agent에 전달
+3. preprocessing agent는 질문표준화, intent 추출, Slot추출하여 supervisor agent에 전달
+4. Supervisor agent는 질문과 intent를 분석하여 전처리 결과를 기반으로 적절한 도메인 에이전트에 라우팅
+5. domain agent는 요청을 처리하기 위한 적정한 Tool을 선택하여 요청을 처리
+    5-1. 예외처리 : 적절한 Tool이 없으면 LLM이 직접 대답을 작성하고 필요한 Tool을 정리하여 Agent I/O 로깅
+    5-2. 예외처리 : 수행하려는 Tool의 Input이 부족한 경우 
+        5-2-1. 필요한 Input을 다른 Tool을 통해 추출 가능한지 Supervisor agent에게 질의하여 확인
+            5-2-1-1. 추출 가능한 경우 해당 Tool을 통해 추출
+            5-2-1-2. 추출 불가능한 경우 사용자에게 요청하여 입력받음
+        5-2-3. 필요한 Input을 종합하여 Tool에게 전달 및 수행
+    5-3. 예외처리 : Tool 수행 결과가 기대한 값이 아닌 경우 
+        5-3-1. Tool Output을Supervisor agent에게 다시 질의하여 올바른 값을 추출하여 다시 Tool에 전달 및 수행
+6. 처리된 결과들을 종합하여 다시 supervisor agent에 전달
+7. supervisor agent는 처리된 결과를 기반으로 적절한 응답을 생성하여 사용자에게 전달
+8. 응답은 요약하여 Session 별 대화 내역으로 File 저장
+
+### Agent 구성 상세
+- Agent별로 Json이 존재하며 상세 속성 정보가 정의되어 있음
+- Json은 별도의 Directory에 저장
+    - Json 파일 명은 Agent 이름으로 저장
+    - Json 파일 내용은 Agent의 속성 정보가 정의되어 있음
+    - Json 상세 내용
+        1. 모든 Agent의 공통 속성
+            - "name": "agent_name", // Agent의 이름
+            - "type": "agent_type", // Agent의 유형. rewriting, preprocessing, supervisor, domain, tools
+            - "description": "agent_description", // Agent의 설명
+            - "prompt": "agent_system_prompt", // Agent의 시스템 프롬프트
+            - "role": "agent_role", // Agent의 역할. 고정값
+            - "next_agent": ["next_agent_name", "next_agent_name", ...], // 다음 Agent의 이름
+            - "model": "model_name", // Agent가 사용하는 모델
+            - "model_provider": "model_provider_name", // Agent가 사용하는 모델 제공자
+            - "temperature": 0.7, // 모델의 온도(창의성). 0.0 ~ 1.0 사이의 값
+            - "language": "ko", // 처리 언어. 예: 'ko', 'en'
+            - "style": "formal", // 표현 스타일. 'formal', 'concise', 'explanatory' 중 선택
+            - "max_retries": 3, // 최대 재시도 횟수
+            - "retry_delay": 1, // 재시도 대기 시간 (초)
+            - "retry_delay_max": 10, // 최대 재시도 대기 시간 (초)
+            - "retry_delay_min": 1 // 최소 재시도 대기 시간 (초)
+        2. rewriting agent 추가 속성
+            - "input_format": {
+                "type": "json",
+                "schema": {
+                    "query": ["string", "string", ...]
+                }
+            }
+            - "output_format": {
+                "type": "json",
+                "schema": {
+                    "rewritten_text": "string",
+                    "topic": "string"
+                }
+            }
+        3. preprocessing agent 추가 속성
+            - "input_format": {
+                "type": "json",
+                "schema": {
+                    "rewritten_text": "string",
+                    "topic": "string"
+                }
+            }
+            - "output_format": {
+                "type": "json",
+                "schema": {
+                    "normalized_text": "string",
+                    "intent": "string",
+                    "slot": ["string", "string", ...]
+                }
+            }
+        4. supervisor agent 추가 속성
+            - "domain_list": ["domain1", "domain2", ...] // 도메인 리스트
+            - "input_format": {
+                "type": "json",
+                "schema": {
+                    "normalized_text": "string",
+                    "intent": "string",
+                    "slot": ["string", "string", ...]
+                },
+                "context": {
+                    "session_id": "string",
+                    "depth": "int",
+                    "current_step": "string",
+                    "status_history": ["string", "string", ...],
+                    "agent_call_history": [{
+                        "agent_name": "string",
+                        "status": "string"
+                    }, ...],                    
+                    "missing_slots": ["string", "string", ...]
+                }
+            }
+            - "output_format": {
+                "type": "json",
+                "schema": {
+                    "target_domain": "string",
+                    "normalized_text": "string",
+                    "intent": "string",
+                    "slot": ["string", "string", ...]
+                },
+                "context": {
+                    "session_id": "string",
+                    "depth": "int",
+                    "current_step": "string",
+                    "status_history": ["string", "string", ...],
+                    "agent_call_history": [{
+                        "agent_name": "string",
+                        "status": "string"
+                    }, ...],                    
+                    "missing_slots": ["string", "string", ...]
+                }
+            }
+            - "fallback_strategy": {
+                "max_context_depth": 3,
+                "missing_input": {
+                    "check_tool_availability": true,
+                    "if_available": "call_tool",
+                    "if_unavailable": "ask_user"
+                },
+                "tool_failure": {
+                    "retry_on_failure": true,
+                    "max_retries": 2,
+                    "fallback_action": "ask_user"
+                },
+                "no_tool_found": {
+                    "llm_fallback": true,
+                    "log_intent_tool_pair": true
+                }
+            }
+        5. domain agent 추가 속성
+            - "tool_list": ["tool1", "tool2", ...] // Tool 리스트
+            - "input_format": {
+                "type": "json",
+                "schema": {
+                    "normalized_text": "string",
+                    "intent": "string",
+                    "slot": ["string", "string", ...]
+                },
+                "context": {
+                    "session_id": "string",
+                    "depth": "int",
+                    "current_step": "string",
+                    "status_history": ["string", "string", ...],
+                    "agent_call_history": [{
+                        "agent_name": "string",
+                        "status": "string"
+                    }, ...],                    
+                    "missing_slots": ["string", "string", ...]
+                }
+            }
+            - "output_format": {
+                "type": "json",
+                "schema": {
+                    "tool_name": "string",
+                    "tool_input": "object",
+                    "tool_output": "object",
+                    "context": {
+                        "session_id": "string",
+                        "depth": "int",
+                        "current_step": "string",
+                        "status_history": ["string", "string", ...],
+                        "agent_call_history": [{
+                            "agent_name": "string",
+                            "status": "string"
+                        }, ...],                    
+                        "missing_slots": ["string", "string", ...]
+                    }
+                }
+            }   
+            // status: "user_query", "not_expected_output", "missing_slots", "retry"
+
+        6. tools 추가 속성
+            - Tool의 input_format과 output_format은 Tool 별로 별도로 정의되어 있음
+            - "expected_output": "expected_output_description", // Tool의 예상 출력 설명
+        
+## MCP 서버
+- Tool Execution Gateway 역할
+    - Agent간 통신을 위한 역할
+    - Agent가 Tool을 실행하기 위한 역할
+- FastAPI 프레임워크 사용
+- 비동기 처리 지원
+- supervisor agent는 domain agent를 병렬로 호출 할 수 있어야 함
+
+## 웹 UI/UX
+### 디자인 가이드라인
+- 전체 색상 테마: blue color tone
+- chatgpt와 유사한 Web UI 서비스
+    - Agent의 답변이 실시간 스트리밍으로 출력되어야 함
+    - 질문 입력 인터페이스
+
