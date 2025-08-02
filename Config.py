@@ -13,8 +13,8 @@ else:
 
 class Config:
     # API Keys
-    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
-    DEEPINFRA_API_KEY = os.getenv('DEEPINFRA_API_KEY', '')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    DEEPINFRA_API_KEY = os.getenv('DEEPINFRA_API_KEY')
     
     # 서버 설정
     HOST = os.getenv('HOST', '0.0.0.0')

@@ -17,19 +17,31 @@ class SupervisorAgent(BaseAgent):
         intent = input_data.get("intent", "")
         slot = input_data.get("slot", [])
         
+        # 입력 데이터 로깅
+        self.logger.info(f"=== {self.config.name} Input ===")
+        self.logger.info(f"Normalized Text: {normalized_text}")
+        self.logger.info(f"Intent: {intent}")
+        self.logger.info(f"Slot: {slot}")
+        
         # 컨텍스트 업데이트
         updated_context = self._update_context(context, input_data)
         
         # 라우팅 결정
         routing_decision = await self._make_routing_decision(normalized_text, intent, slot, updated_context)
         
-        return {
+        result = {
             "target_domain": routing_decision.get("target_domain", "general"),
             "normalized_text": normalized_text,
             "intent": intent,
             "slot": slot,
             "context": updated_context
         }
+        
+        # 출력 데이터 로깅
+        self.logger.info(f"=== {self.config.name} Output ===")
+        self.logger.info(f"Result: {result}")
+        
+        return result
     
     def _update_context(self, context: Optional[Dict[str, Any]], input_data: Dict[str, Any]) -> Dict[str, Any]:
         """컨텍스트 업데이트"""

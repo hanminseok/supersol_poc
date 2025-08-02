@@ -39,6 +39,13 @@ class BaseAgent(ABC):
                 # 출력 데이터 검증
                 validated_output = self._validate_output(result)
                 
+                # Agent 입출력 로깅
+                self.logger.log_agent_io(
+                    agent_name=self.config.name,
+                    input_data=validated_input,
+                    output_data=validated_output
+                )
+                
                 self.logger.info(f"{self.config.name} execution completed successfully")
                 return validated_output
                 
@@ -81,7 +88,7 @@ class BaseAgent(ABC):
         try:
             if self.config.model_provider == "openai":
                 if stream:
-                    response = await self.client.chat.completions.create(
+                    response = self.client.chat.completions.create(
                         model=self.config.model,
                         messages=messages,
                         temperature=self.config.temperature,
@@ -89,21 +96,27 @@ class BaseAgent(ABC):
                     )
                     return response
                 else:
-                    response = await self.client.chat.completions.create(
+                    response = self.client.chat.completions.create(
                         model=self.config.model,
                         messages=messages,
                         temperature=self.config.temperature
                     )
-                    return response.choices[0].message.content
+                    content = response.choices[0].message.content
+                    if not content or content.strip() == "":
+                        raise ValueError("Empty response from LLM")
+                    return content
                     
             elif self.config.model_provider == "deepinfra":
                 # DeepInfra API 호출 로직
-                response = await self.client.chat.completions.create(
+                response = self.client.chat.completions.create(
                     model=self.config.model,
                     messages=messages,
                     temperature=self.config.temperature
                 )
-                return response.choices[0].message.content
+                content = response.choices[0].message.content
+                if not content or content.strip() == "":
+                    raise ValueError("Empty response from LLM")
+                return content
                 
         except Exception as e:
             self.logger.error(f"LLM call failed: {str(e)}")

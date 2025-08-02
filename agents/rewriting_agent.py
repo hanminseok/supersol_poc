@@ -14,6 +14,11 @@ class RewritingAgent(BaseAgent):
         """질문 재작성 처리"""
         query = input_data.get("query", [])
         
+        # 입력 데이터 로깅
+        self.logger.info(f"=== {self.config.name} Input ===")
+        self.logger.info(f"Query: {query}")
+        self.logger.info(f"Context: {context}")
+        
         # 대화 맥락을 포함한 프롬프트 생성
         context_prompt = self._build_context_prompt(query, context)
         
@@ -27,16 +32,50 @@ class RewritingAgent(BaseAgent):
         
         # JSON 응답 파싱
         try:
-            result = json.loads(response)
-            return {
-                "rewritten_text": result.get("rewritten_text", ""),
-                "topic": result.get("topic", "")
+            # 응답이 비어있는지 확인
+            if not response or response.strip() == "":
+                self.logger.warning(f"Empty response from {self.config.name}")
+                return {
+                    "rewritten_text": "질문을 이해하지 못했습니다. 다시 말씀해 주세요.",
+                    "topic": "general"
+                }
+            
+            # JSON 파싱 시도
+            result = json.loads(response.strip())
+            
+            # 필수 필드 확인
+            rewritten_text = result.get("rewritten_text", "")
+            topic = result.get("topic", "general")
+            
+            if not rewritten_text:
+                self.logger.warning(f"Empty rewritten_text in response from {self.config.name}")
+                return {
+                    "rewritten_text": "질문을 이해하지 못했습니다. 다시 말씀해 주세요.",
+                    "topic": topic
+                }
+            
+            result = {
+                "rewritten_text": rewritten_text,
+                "topic": topic
             }
-        except json.JSONDecodeError:
-            self.logger.error(f"Failed to parse JSON response from {self.config.name}")
-            # 기본 응답 생성
+            
+            # 출력 데이터 로깅
+            self.logger.info(f"=== {self.config.name} Output ===")
+            self.logger.info(f"Result: {result}")
+            
+            return result
+            
+        except json.JSONDecodeError as e:
+            self.logger.error(f"Failed to parse JSON response from {self.config.name}: {str(e)}")
+            self.logger.error(f"Raw response: {response}")
+            
+            # 기본 응답 생성 - 원본 질문을 그대로 사용
+            original_query = input_data.get("query", "")
+            if isinstance(original_query, list):
+                original_query = " ".join(original_query)
+            
             return {
-                "rewritten_text": response,
+                "rewritten_text": original_query if original_query else "질문을 이해하지 못했습니다.",
                 "topic": "general"
             }
     
@@ -47,7 +86,7 @@ class RewritingAgent(BaseAgent):
 
 사용자 질문: {query}
 
-재작성된 질문과 주제를 다음 JSON 형식으로 응답해주세요:
+반드시 다음 JSON 형식으로만 응답해주세요. 다른 텍스트는 포함하지 마세요:
 {{
     "rewritten_text": "재작성된 명확한 질문",
     "topic": "질문의 주제 (예: banking, account, loan, investment, general)"
@@ -57,5 +96,12 @@ class RewritingAgent(BaseAgent):
 1. 대화 맥락을 고려하여 명확하게 만듭니다
 2. 은행 서비스와 관련된 용어를 정확히 사용합니다
 3. 구체적이고 실행 가능한 질문으로 만듭니다
+4. 반드시 JSON 형식을 정확히 지켜주세요
+
+응답 예시:
+{{
+    "rewritten_text": "계좌 잔액을 확인하고 싶습니다",
+    "topic": "account"
+}}
 """
         return prompt 

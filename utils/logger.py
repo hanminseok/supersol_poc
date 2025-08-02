@@ -24,7 +24,7 @@ class Logger:
         # 로그 디렉토리 생성
         os.makedirs('logs', exist_ok=True)
         
-        # Agent I/O 로깅용 File Handler
+        # Agent I/O 로깅용 File Handler (Agent 입출력만 기록)
         agent_handler = logging.handlers.TimedRotatingFileHandler(
             filename=f'logs/Agent_log_{datetime.now().strftime("%Y%m%d")}.log',
             when='midnight',
@@ -34,7 +34,10 @@ class Logger:
         )
         agent_handler.setLevel(logging.INFO)
         agent_handler.setFormatter(formatter)
-        self.logger.addHandler(agent_handler)
+        # Agent 로그용 별도 로거 생성
+        self.agent_logger = logging.getLogger(f"{name}_Agent")
+        self.agent_logger.addHandler(agent_handler)
+        self.agent_logger.setLevel(logging.INFO)
         
         # 서비스 로깅용 File Handler
         service_handler = logging.handlers.TimedRotatingFileHandler(
@@ -62,6 +65,14 @@ class Logger:
     
     def critical(self, message, exc_info=True):
         self.logger.critical(message, exc_info=exc_info)
+    
+    def log_agent_io(self, agent_name: str, input_data: dict, output_data: dict):
+        """Agent 입출력만 기록하는 전용 메서드"""
+        import json
+        self.agent_logger.info(f"=== {agent_name} I/O Log ===")
+        self.agent_logger.info(f"Input: {json.dumps(input_data, ensure_ascii=False, indent=2)}")
+        self.agent_logger.info(f"Output: {json.dumps(output_data, ensure_ascii=False, indent=2)}")
+        self.agent_logger.info("=" * 80)
 
 # 전역 로거 인스턴스
 service_logger = Logger("SuperSOL_Service")

@@ -15,6 +15,11 @@ class PreprocessingAgent(BaseAgent):
         rewritten_text = input_data.get("rewritten_text", "")
         topic = input_data.get("topic", "")
         
+        # 입력 데이터 로깅
+        self.logger.info(f"=== {self.config.name} Input ===")
+        self.logger.info(f"Rewritten Text: {rewritten_text}")
+        self.logger.info(f"Topic: {topic}")
+        
         # 전처리 프롬프트 생성
         prompt = self._build_preprocessing_prompt(rewritten_text, topic)
         
@@ -29,19 +34,31 @@ class PreprocessingAgent(BaseAgent):
         # JSON 응답 파싱
         try:
             result = json.loads(response)
-            return {
+            output_result = {
                 "normalized_text": result.get("normalized_text", rewritten_text),
                 "intent": result.get("intent", ""),
                 "slot": result.get("slot", [])
             }
+            
+            # 출력 데이터 로깅
+            self.logger.info(f"=== {self.config.name} Output ===")
+            self.logger.info(f"Result: {output_result}")
+            
+            return output_result
         except json.JSONDecodeError:
             self.logger.error(f"Failed to parse JSON response from {self.config.name}")
             # 기본 응답 생성
-            return {
+            default_result = {
                 "normalized_text": rewritten_text,
                 "intent": "general_inquiry",
                 "slot": []
             }
+            
+            # 기본 출력 데이터 로깅
+            self.logger.info(f"=== {self.config.name} Output (Default) ===")
+            self.logger.info(f"Result: {default_result}")
+            
+            return default_result
     
     def _build_preprocessing_prompt(self, rewritten_text: str, topic: str) -> str:
         """전처리 프롬프트 생성"""

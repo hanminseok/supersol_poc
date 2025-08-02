@@ -17,6 +17,13 @@ class DomainAgent(BaseAgent):
         slot = input_data.get("slot", [])
         target_domain = input_data.get("target_domain", "general")
         
+        # 입력 데이터 로깅
+        self.logger.info(f"=== {self.config.name} Input ===")
+        self.logger.info(f"Normalized Text: {normalized_text}")
+        self.logger.info(f"Intent: {intent}")
+        self.logger.info(f"Slot: {slot}")
+        self.logger.info(f"Target Domain: {target_domain}")
+        
         # 컨텍스트 업데이트
         updated_context = self._update_context(context, input_data)
         
@@ -26,12 +33,18 @@ class DomainAgent(BaseAgent):
         # 도구 실행 (실제로는 MCP 서버를 통해 실행)
         tool_result = await self._execute_tool(tool_selection, updated_context)
         
-        return {
+        result = {
             "tool_name": tool_selection.get("tool_name", ""),
             "tool_input": tool_selection.get("tool_input", {}),
             "tool_output": tool_result,
             "context": updated_context
         }
+        
+        # 출력 데이터 로깅
+        self.logger.info(f"=== {self.config.name} Output ===")
+        self.logger.info(f"Result: {result}")
+        
+        return result
     
     def _update_context(self, context: Optional[Dict[str, Any]], input_data: Dict[str, Any]) -> Dict[str, Any]:
         """컨텍스트 업데이트"""
