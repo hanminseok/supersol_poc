@@ -32,43 +32,39 @@ class ChatService:
             rewriting_result = await self._execute_rewriting_agent(user_query, conversation_history, customer_info)
             agent_log.append(f"Rewriting Agent Input: {json.dumps({'query': user_query, 'conversation_history': conversation_history, 'customer_info': customer_info}, ensure_ascii=False)}")
             agent_log.append(f"Rewriting Agent Output: {json.dumps(rewriting_result, ensure_ascii=False)}")
-            yield f"data: {json.dumps({'type': 'agent_log', 'content': f'Rewriting Agent 처리 완료'}, ensure_ascii=False)}\n\n"
             
             # 2. Preprocessing Agent
             preprocessing_result = await self._execute_preprocessing_agent(rewriting_result, customer_info)
             agent_log.append(f"Preprocessing Agent Input: {json.dumps({'rewriting_result': rewriting_result, 'customer_info': customer_info}, ensure_ascii=False)}")
             agent_log.append(f"Preprocessing Agent Output: {json.dumps(preprocessing_result, ensure_ascii=False)}")
-            yield f"data: {json.dumps({'type': 'agent_log', 'content': f'Preprocessing Agent 처리 완료'}, ensure_ascii=False)}\n\n"
             
             # 3. Supervisor Agent
             supervisor_result = await self._execute_supervisor_agent(preprocessing_result, customer_info)
             agent_log.append(f"Supervisor Agent Input: {json.dumps({'preprocessing_result': preprocessing_result, 'customer_info': customer_info}, ensure_ascii=False)}")
             agent_log.append(f"Supervisor Agent Output: {json.dumps(supervisor_result, ensure_ascii=False)}")
-            yield f"data: {json.dumps({'type': 'agent_log', 'content': f'Supervisor Agent 처리 완료'}, ensure_ascii=False)}\n\n"
             
             # 4. Domain Agent
             domain_result = await self._execute_domain_agent(supervisor_result, customer_info)
             agent_log.append(f"Domain Agent Input: {json.dumps({'supervisor_result': supervisor_result, 'customer_info': customer_info}, ensure_ascii=False)}")
             agent_log.append(f"Domain Agent Output: {json.dumps(domain_result, ensure_ascii=False)}")
-            yield f"data: {json.dumps({'type': 'agent_log', 'content': f'Domain Agent 처리 완료'}, ensure_ascii=False)}\n\n"
             
             # 5. 최종 응답 생성
             final_response = await self._generate_final_response(domain_result, user_query, customer_info)
             
             # 응답 스트리밍
-            for chunk in self._stream_response(final_response):
-                yield f"data: {json.dumps({'type': 'response', 'content': chunk}, ensure_ascii=False)}\n\n"
+            async for chunk in self._stream_response(final_response):
+                yield json.dumps({'type': 'response', 'content': chunk}, ensure_ascii=False)
             
             # 대화 내역 저장
             agent_log_text = "\n".join(agent_log)
             await self.session_manager.save_conversation(session_id, user_query, final_response, agent_log_text)
             
-            yield f"data: {json.dumps({'type': 'complete'}, ensure_ascii=False)}\n\n"
+            yield json.dumps({'type': 'complete'}, ensure_ascii=False)
             
         except Exception as e:
             self.logger.error(f"Chat processing failed: {str(e)}")
             error_response = f"죄송합니다. 처리 중 오류가 발생했습니다: {str(e)}"
-            yield f"data: {json.dumps({'type': 'error', 'content': error_response}, ensure_ascii=False)}\n\n"
+            yield json.dumps({'type': 'error', 'content': error_response}, ensure_ascii=False)
     
     async def _execute_rewriting_agent(self, user_query: str, conversation_history: list, customer_info: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Rewriting Agent 실행"""
@@ -176,12 +172,12 @@ class ChatService:
                 response = response.replace("고객", customer_name)
             return response
     
-    def _stream_response(self, response: str) -> AsyncGenerator[str, None]:
+    async def _stream_response(self, response: str) -> AsyncGenerator[str, None]:
         """응답 스트리밍"""
-        words = response.split()
-        for i, word in enumerate(words):
-            yield word + (" " if i < len(words) - 1 else "")
-            asyncio.sleep(0.1)  # 스트리밍 효과를 위한 지연
+        # 문자별로 스트리밍하여 자연스러운 타이핑 효과 구현
+        for char in response:
+            yield char
+            await asyncio.sleep(0.03)  # 빠른 타이핑 효과
     
     async def get_session_list(self) -> list:
         """세션 목록 조회"""

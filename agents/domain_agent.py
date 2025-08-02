@@ -12,39 +12,44 @@ class DomainAgent(BaseAgent):
     
     async def _process(self, input_data: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """도메인별 요청 처리 및 도구 선택"""
-        normalized_text = input_data.get("normalized_text", "")
-        intent = input_data.get("intent", "")
-        slot = input_data.get("slot", [])
-        target_domain = input_data.get("target_domain", "general")
-        
-        # 입력 데이터 로깅
-        self.logger.info(f"=== {self.config.name} Input ===")
-        self.logger.info(f"Normalized Text: {normalized_text}")
-        self.logger.info(f"Intent: {intent}")
-        self.logger.info(f"Slot: {slot}")
-        self.logger.info(f"Target Domain: {target_domain}")
-        
-        # 컨텍스트 업데이트
-        updated_context = self._update_context(context, input_data)
-        
-        # 도구 선택
-        tool_selection = await self._select_tool(normalized_text, intent, slot, target_domain, updated_context)
-        
-        # 도구 실행 (실제로는 MCP 서버를 통해 실행)
-        tool_result = await self._execute_tool(tool_selection, updated_context)
-        
-        result = {
-            "tool_name": tool_selection.get("tool_name", ""),
-            "tool_input": tool_selection.get("tool_input", {}),
-            "tool_output": tool_result,
-            "context": updated_context
-        }
-        
-        # 출력 데이터 로깅
-        self.logger.info(f"=== {self.config.name} Output ===")
-        self.logger.info(f"Result: {result}")
-        
-        return result
+        try:
+            normalized_text = input_data.get("normalized_text", "")
+            intent = input_data.get("intent", "")
+            slot = input_data.get("slot", [])
+            target_domain = input_data.get("target_domain", "general")
+            
+            # 입력 데이터 로깅
+            self.logger.info(f"=== {self.config.name} Input ===")
+            self.logger.info(f"Normalized Text: {normalized_text}")
+            self.logger.info(f"Intent: {intent}")
+            self.logger.info(f"Slot: {slot}")
+            self.logger.info(f"Target Domain: {target_domain}")
+            
+            # 컨텍스트 업데이트
+            updated_context = self._update_context(context, input_data)
+            
+            # 도구 선택
+            tool_selection = await self._select_tool(normalized_text, intent, slot, target_domain, updated_context)
+            
+            # 도구 실행 (실제로는 MCP 서버를 통해 실행)
+            tool_result = await self._execute_tool(tool_selection, updated_context)
+            
+            result = {
+                "tool_name": tool_selection.get("tool_name", ""),
+                "tool_input": tool_selection.get("tool_input", {}),
+                "tool_output": tool_result,
+                "context": updated_context
+            }
+            
+            # 출력 데이터 로깅
+            self.logger.info(f"=== {self.config.name} Output ===")
+            self.logger.info(f"Result: {result}")
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Domain agent _process failed: {str(e)}")
+            raise e
     
     def _update_context(self, context: Optional[Dict[str, Any]], input_data: Dict[str, Any]) -> Dict[str, Any]:
         """컨텍스트 업데이트"""

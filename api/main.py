@@ -192,6 +192,7 @@ async def get():
                 };
                 
                 ws.onmessage = function(event) {
+                    console.log('WebSocket 메시지 수신:', event.data);  // 디버깅용 로그
                     const data = JSON.parse(event.data);
                     handleMessage(data);
                 };
@@ -201,25 +202,42 @@ async def get():
                 };
             }
 
+            let currentResponseDiv = null;  // 현재 응답을 표시할 div
+            
             function handleMessage(data) {
+                console.log('handleMessage 호출됨, data:', data);  // 디버깅용 로그
                 const chatMessages = document.getElementById('chatMessages');
                 
+                // data가 문자열인 경우 JSON 파싱 시도
+                if (typeof data === 'string') {
+                    try {
+                        data = JSON.parse(data);
+                    } catch (e) {
+                        console.error('JSON 파싱 오류:', e, '원본 데이터:', data);
+                        return;
+                    }
+                }
+                
                 if (data.type === 'response') {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'message bot-message';
-                    messageDiv.textContent = data.content;
-                    chatMessages.appendChild(messageDiv);
-                } else if (data.type === 'agent_log') {
-                    const logDiv = document.createElement('div');
-                    logDiv.className = 'message agent-log';
-                    logDiv.textContent = '🤖 ' + data.content;
-                    chatMessages.appendChild(logDiv);
+                    // 첫 번째 응답 청크인 경우 새로운 div 생성
+                    if (!currentResponseDiv) {
+                        currentResponseDiv = document.createElement('div');
+                        currentResponseDiv.className = 'message bot-message';
+                        currentResponseDiv.textContent = '';
+                        chatMessages.appendChild(currentResponseDiv);
+                    }
+                    // 기존 응답에 새로운 내용 추가
+                    currentResponseDiv.textContent += data.content;
+
                 } else if (data.type === 'error') {
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'message bot-message';
                     errorDiv.style.color = 'red';
                     errorDiv.textContent = '❌ ' + data.content;
                     chatMessages.appendChild(errorDiv);
+                } else if (data.type === 'complete') {
+                    console.log('응답 완료');
+                    currentResponseDiv = null;  // 응답 완료 시 초기화
                 }
                 
                 chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -239,6 +257,9 @@ async def get():
                     userDiv.className = 'message user-message';
                     userDiv.textContent = message;
                     document.getElementById('chatMessages').appendChild(userDiv);
+                    
+                    // 새로운 메시지 전송 시 이전 응답 상태 초기화
+                    currentResponseDiv = null;
                     
                     const request = {
                         session_id: currentSessionId || 'session_' + Date.now(),
@@ -291,6 +312,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_query=request.get("message", ""),
                 customer_info=request.get("customer_info")
             ):
+                # response는 이미 JSON 형식이므로 직접 전송
+                service_logger.info(f"WebSocket 전송: {response[:100]}...")  # 디버깅용 로그
                 await manager.send_personal_message(response, websocket)
                 
     except WebSocketDisconnect:
