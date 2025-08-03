@@ -1,0 +1,181 @@
+# SuperSOL 은행 채팅 서비스 - Cursor 개발 규칙
+
+## 프로젝트 개요
+- 은행 앱 내 고객 지원을 위한 멀티 에이전트 기반 채팅 서비스
+- 프로젝트 루트 디렉토리: SuperSOL
+- Python 가상환경: solenv (위치: SuperSOL/solenv)
+- 서비스 시작 시 항상 solenv를 활성화해야 함
+- 소스 코드 위치: SuperSOL/src
+- 모든 환경변수는 Config.py에 정의
+- API 키 (openai, deepinfra)
+  - OPENAI_API_KEY=환경변수로 설정
+  - DEEPINFRA_API_KEY=환경변수로 설정
+
+## 서비스 요구사항
+- 채팅 서비스 기능 구현
+  - Multi turn 채팅 기능 구현
+  - 스트리밍으로 대답을 해주어야 함
+  - 질문에 대한 답변 방식
+    - 첫번째 대화창에서는 Agent가 작동하는 과정을 보여주어야 함
+    - 두번째 대화창에서는 질문에 대한 답변을 해주어야 함
+- 시스템의 구성요소
+  - preprocessing
+  - supervisor agent
+  - domain agent
+  - worker agent
+  - tools
+  - mcp server
+  - web ui
+- agent_config/ 폴더에는 모든 agent의 속성 정보가 Json으로 정의되어 있음
+  - preprocessing agent의 속성 정보는 preprocessing_agent.json 파일에 정의되어 있음
+    - text normalization 속성 정보와 query rewriting 속성 정보가 있음
+  - supervisor agent의 속성 정보는 supervisor_agent.json 파일에 정의되어 있음
+  - domain agent의 갯수 만큼 domain_agent_{domain_name}.json 파일이 있음
+  - worker agent의 갯수 만큼 worker_agent_{worker_name}.json 파일이 있음
+  - tool의 갯수 만큼 tool_{tool_name}.json 파일이 있음
+  - Json에는 agent를 구성하는 모든 요소가 포함되어 있음
+    - Json에는 agent의 역할, 프롬프트, 도구, 모델, 파라미터 등이 포함되어 있음
+    - Json에는 agent의 입출력 형식이 포함되어 있음
+    - Json에는 agent의 오류 처리 방법이 포함되어 있음
+    - Json에는 agent의 재시도 횟수가 포함되어 있음
+    - Json에는 agent의 최대 시도 횟수가 포함되어 있음
+- domain agent와 worker agent는 N개가 있을 수 있고 Json으로 정의되어 있음
+
+## 에이전트 아키텍처
+### 1. preprocessing
+1. Text Normalization : Deepinfra의 Qwen/Qwen3-30B-A3B 모델 사용
+  1-1. 특수문자 제거
+  1-2. 중복 문자 제거
+  1-3. 불필요한 문자 제거
+  1-4. 대소문자 통일
+2. Query rewriting :  Deepinfra의 Qwen/Qwen3-30B-A3B 모델 사용
+  2-1. Multiturn을 고려한 질의 재작성
+
+### 2. Supervisor Agent (최상위 의사결정자)
+- OpenAI GPT4o 모델 사용
+- 사용자 질문에서 Context, Intent, Slot 추출
+- 적절한 Domain Agent에게 작업 위임
+- **보완 필요**: 에러 처리 및 재시도 로직 추가 필요
+
+### 3. Domain Agent (비즈니스 도메인 전문가)
+- OpenAI GPT4o 모델 사용
+- 2개 도메인 처리: 은행 업무, 자산관리
+- 향후 도메인 추가를 위한 확장 가능한 구조
+- 도메인별 전문성 강화를 위한 프롬프트 엔지니어링
+
+### 4. Worker Agent (작업 실행자)
+- Deepinfra의 Qwen/Qwen3-30B-A3B LLM 모델 사용
+- 7개 작업자 유형:
+  - 고객정보
+  - 금융정보
+  - 이체
+  - 계좌
+  - 자동이체
+  - 투자상품
+  - 대출
+- 주요 목표: 적절한 도구들을 효율적으로 호출
+
+## 도구 구조
+### 도구 유형
+- **조회 도구**: SuperSOL/Data의 JSON 샘플 데이터 사용
+- **실행 도구**: "실행되었습니다" 메시지 반환
+- 모든 도구는 정의된 입출력 인터페이스 필요
+
+### 필수 도구 그룹 목록
+1. 고객정보 조회
+2. 금융정보 조회
+3. 이체 조회
+4. 이체 실행
+5. 계좌 조회
+6. 자동이체 조회
+7. 자동이체 실행
+8. 투자상품 조회
+9. 투자상품 실행
+10. 대출 조회
+11. 대출 실행
+
+
+## 로깅 시스템 (SuperSOL/src/logger.py)
+### 로거 클래스 구성
+- Console handler 1개, File hanler 2개
+- 로그 파일 경로: SuperSOL/logs
+- 로그 형식: "%(asctime)s [%(levelname)-8s][%(name)-15s] %(message)s"
+- 날짜 형식: "%Y-%m-%d %H:%M:%S"
+- 에러 발생 시 파일명과 라인 번호 기록
+
+### 파일 핸들러 구성
+1. **Agent I/O 로깅**: Agent_log_{%Y%m%d}.log (일일 로테이션)
+2. **서비스 로깅**: Service_log_{%Y%m%d}.log (일일 로테이션)
+
+### 로깅 요구사항
+- **Agent I/O 로깅** handler는 모든 에이전트와 도구의 입출력 기록
+-**Agent I/O 로깅** Log에는 Agent와 Tool의 input/output만 출력되도록 해줘
+- **서비스 로깅** handler는 서비스 전반적인 로깅 기록
+- 로그 레벨별 적절한 필터링
+- 로그 파일 크기 제한 및 압축
+
+## MCP 서버
+### 기술 스택
+- FastAPI 프레임워크 사용
+- 비동기 처리 지원
+
+### API 엔드포인트
+- 채팅 메시지 처리
+- 시스템 상태 확인
+
+## 웹 UI/UX
+### 디자인 가이드라인
+- 전체 색상 테마: 파란색 톤
+- Agent의 답변이 실시간 스트리밍으로 출력되어야 함
+- 질문 입력 인터페이스
+- Swagger 사용
+
+### 사용자 경험
+- Agent의 답변이 실시간 스트리밍으로 출력되어야 함
+- 반응형 디자인
+- 로딩 상태 표시
+- 에러 메시지 처리
+- 접근성 고려
+
+## 개발 가이드라인
+### 코드 품질
+- Python 타입 힌트 필수 사용
+- PEP 8 스타일 가이드 준수
+- 적절한 에러 처리 (try-catch 블록)
+- I/O 작업에 async/await 사용
+- 종합적인 단위 테스트 구현
+- 의존성 주입을 통한 테스트 가능성 향상
+- 모든 공개 API와 메서드 문서화
+- 환경변수를 통한 설정 관리
+- API 키 보안 조치 구현
+
+### 코드 구조
+- 의미있는 변수명과 함수명 사용
+- 모든 클래스와 함수에 docstring 추가
+- 적절한 로그 레벨 사용 (DEBUG, INFO, WARNING, ERROR)
+- 매직 넘버와 문자열에 상수 사용
+- 적절한 입력 검증 구현
+- 데이터 구조에 dataclass 또는 Pydantic 모델 사용
+- Python 파일과 클래스는 1:1 관계 유지
+
+## 파일 구조 요구사항
+```
+SuperSOL/
+├── src/
+│   ├── Config.py (환경변수)
+│   ├── logger.py (로깅 시스템)
+│   ├── preprocessing/ (전처리)
+│   ├── agent_config/ (에이전트들의 속성 정보를 Json으로 관리하는 폴더)
+│   ├── agents/ (agent_config 폴더의 Json들을 기반으로 Agent를 만들어내는 코드 폴더)
+│   ├── tool_config/ (tool들의 속성 정보를 Json으로 관리하는 폴더)
+│   ├── tools/ (tool_config 폴더의 Json들을 기반으로 Tool을 만들어내는 코드 폴더)
+│   ├── mcp_server/ (MCP 서버)
+│   ├── web_ui/ (웹 UI)
+│   ├── models/ (데이터 모델)
+│   ├── utils/ (유틸리티 함수)
+│   └── tests/ (테스트 코드)
+├── Data/ (JSON 샘플 데이터)
+├── logs/ (로그 파일)
+├── docs/ (문서)
+└── solenv/ (가상환경)
+``` 
