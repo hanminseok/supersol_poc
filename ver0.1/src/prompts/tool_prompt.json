@@ -1,0 +1,279 @@
+{
+  "customer_info": {
+    "get_customer_info": {
+      "description": "고객의 개인정보를 조회합니다.",
+      "parameters": {
+        "customer_id": {
+          "type": "string",
+          "description": "고객 ID",
+          "required": true
+        }
+      },
+      "returns": {
+        "name": "고객명",
+        "phone": "전화번호",
+        "email": "이메일",
+        "address": "주소"
+      }
+    },
+    "update_customer_info": {
+      "description": "고객의 개인정보를 수정합니다.",
+      "parameters": {
+        "customer_id": {
+          "type": "string",
+          "description": "고객 ID",
+          "required": true
+        },
+        "field": {
+          "type": "string",
+          "description": "수정할 필드 (name, phone, email, address)",
+          "required": true
+        },
+        "value": {
+          "type": "string",
+          "description": "새로운 값",
+          "required": true
+        }
+      },
+      "returns": {
+        "status": "수정 상태",
+        "message": "수정 결과 메시지"
+      }
+    }
+  },
+  "financial_info": {
+    "get_financial_info": {
+      "description": "고객의 금융 정보를 조회합니다.",
+      "parameters": {
+        "customer_id": {
+          "type": "string",
+          "description": "고객 ID",
+          "required": true
+        }
+      },
+      "returns": {
+        "credit_score": "신용점수",
+        "income": "소득",
+        "assets": "자산",
+        "liabilities": "부채"
+      }
+    }
+  },
+  "transfer": {
+    "get_transfer_history": {
+      "description": "이체 내역을 조회합니다.",
+      "parameters": {
+        "account_number": {
+          "type": "string",
+          "description": "계좌번호",
+          "required": true
+        },
+        "start_date": {
+          "type": "string",
+          "description": "조회 시작일 (YYYY-MM-DD)",
+          "required": false
+        },
+        "end_date": {
+          "type": "string",
+          "description": "조회 종료일 (YYYY-MM-DD)",
+          "required": false
+        }
+      },
+      "returns": {
+        "transfers": "이체 내역 목록",
+        "total_count": "총 이체 건수"
+      }
+    },
+    "execute_transfer": {
+      "description": "이체를 실행합니다.",
+      "parameters": {
+        "from_account": {
+          "type": "string",
+          "description": "출금 계좌번호",
+          "required": true
+        },
+        "to_account": {
+          "type": "string",
+          "description": "입금 계좌번호",
+          "required": true
+        },
+        "amount": {
+          "type": "number",
+          "description": "이체 금액",
+          "required": true
+        },
+        "description": {
+          "type": "string",
+          "description": "이체 설명",
+          "required": false
+        }
+      },
+      "returns": {
+        "status": "이체 상태",
+        "transaction_id": "거래 ID",
+        "message": "이체 결과 메시지"
+      }
+    }
+  },
+  "account": {
+    "get_account_info": {
+      "description": "계좌 정보를 조회합니다.",
+      "parameters": {
+        "account_number": {
+          "type": "string",
+          "description": "계좌번호",
+          "required": true
+        }
+      },
+      "returns": {
+        "account_type": "계좌 유형",
+        "balance": "잔액",
+        "currency": "통화",
+        "status": "계좌 상태"
+      }
+    }
+  },
+  "auto_transfer": {
+    "get_auto_transfer_info": {
+      "description": "자동이체 정보를 조회합니다.",
+      "parameters": {
+        "account_number": {
+          "type": "string",
+          "description": "계좌번호",
+          "required": true
+        }
+      },
+      "returns": {
+        "auto_transfers": "자동이체 목록",
+        "total_count": "총 자동이체 건수"
+      }
+    },
+    "setup_auto_transfer": {
+      "description": "자동이체를 설정합니다.",
+      "parameters": {
+        "from_account": {
+          "type": "string",
+          "description": "출금 계좌번호",
+          "required": true
+        },
+        "to_account": {
+          "type": "string",
+          "description": "입금 계좌번호",
+          "required": true
+        },
+        "amount": {
+          "type": "number",
+          "description": "이체 금액",
+          "required": true
+        },
+        "frequency": {
+          "type": "string",
+          "description": "이체 주기 (daily, weekly, monthly)",
+          "required": true
+        },
+        "start_date": {
+          "type": "string",
+          "description": "시작일 (YYYY-MM-DD)",
+          "required": true
+        }
+      },
+      "returns": {
+        "status": "설정 상태",
+        "auto_transfer_id": "자동이체 ID",
+        "message": "설정 결과 메시지"
+      }
+    }
+  },
+  "investment_products": {
+    "get_investment_products": {
+      "description": "투자상품 목록을 조회합니다.",
+      "parameters": {
+        "product_type": {
+          "type": "string",
+          "description": "상품 유형 (fund, bond, stock)",
+          "required": false
+        },
+        "risk_level": {
+          "type": "string",
+          "description": "위험도 (low, medium, high)",
+          "required": false
+        }
+      },
+      "returns": {
+        "products": "투자상품 목록",
+        "total_count": "총 상품 수"
+      }
+    },
+    "subscribe_investment_product": {
+      "description": "투자상품에 가입합니다.",
+      "parameters": {
+        "product_id": {
+          "type": "string",
+          "description": "상품 ID",
+          "required": true
+        },
+        "customer_id": {
+          "type": "string",
+          "description": "고객 ID",
+          "required": true
+        },
+        "amount": {
+          "type": "number",
+          "description": "투자 금액",
+          "required": true
+        }
+      },
+      "returns": {
+        "status": "가입 상태",
+        "subscription_id": "가입 ID",
+        "message": "가입 결과 메시지"
+      }
+    }
+  },
+  "loan": {
+    "get_loan_info": {
+      "description": "대출 정보를 조회합니다.",
+      "parameters": {
+        "customer_id": {
+          "type": "string",
+          "description": "고객 ID",
+          "required": true
+        }
+      },
+      "returns": {
+        "loans": "대출 목록",
+        "total_count": "총 대출 건수"
+      }
+    },
+    "apply_loan": {
+      "description": "대출을 신청합니다.",
+      "parameters": {
+        "customer_id": {
+          "type": "string",
+          "description": "고객 ID",
+          "required": true
+        },
+        "loan_type": {
+          "type": "string",
+          "description": "대출 유형 (personal, mortgage, business)",
+          "required": true
+        },
+        "amount": {
+          "type": "number",
+          "description": "대출 금액",
+          "required": true
+        },
+        "term": {
+          "type": "integer",
+          "description": "대출 기간 (개월)",
+          "required": true
+        }
+      },
+      "returns": {
+        "status": "신청 상태",
+        "application_id": "신청 ID",
+        "message": "신청 결과 메시지"
+      }
+    }
+  }
+} 

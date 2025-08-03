@@ -1,0 +1,54 @@
+[
+    {
+        "loan_id": "LOAN001",
+        "customer_id": "CUST001",
+        "loan_type": "주택담보대출",
+        "loan_amount": 100000000,
+        "interest_rate": 3.5,
+        "loan_term": 30,
+        "monthly_payment": 450000,
+        "start_date": "2022-01-15",
+        "end_date": "2052-01-15",
+        "remaining_balance": 95000000,
+        "status": "상환중"
+    },
+    {
+        "loan_id": "LOAN002",
+        "customer_id": "CUST001",
+        "loan_type": "신용대출",
+        "loan_amount": 20000000,
+        "interest_rate": 8.5,
+        "loan_term": 5,
+        "monthly_payment": 410000,
+        "start_date": "2023-06-20",
+        "end_date": "2028-06-20",
+        "remaining_balance": 18000000,
+        "status": "상환중"
+    },
+    {
+        "loan_id": "LOAN003",
+        "customer_id": "CUST002",
+        "loan_type": "자동차대출",
+        "loan_amount": 15000000,
+        "interest_rate": 5.2,
+        "loan_term": 7,
+        "monthly_payment": 220000,
+        "start_date": "2023-03-10",
+        "end_date": "2030-03-10",
+        "remaining_balance": 12000000,
+        "status": "상환중"
+    },
+    {
+        "loan_id": "LOAN004",
+        "customer_id": "CUST003",
+        "loan_type": "학자금대출",
+        "loan_amount": 8000000,
+        "interest_rate": 4.8,
+        "loan_term": 10,
+        "monthly_payment": 85000,
+        "start_date": "2021-09-01",
+        "end_date": "2031-09-01",
+        "remaining_balance": 6000000,
+        "status": "상환중"
+    }
+] 

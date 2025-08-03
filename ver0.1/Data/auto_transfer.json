@@ -1,0 +1,54 @@
+[
+    {
+        "auto_transfer_id": "AUTO001",
+        "customer_id": "CUST001",
+        "from_account": "123-456-789",
+        "to_account": "987-654-321",
+        "amount": 500000,
+        "frequency": "월",
+        "day_of_month": 5,
+        "description": "월세 자동이체",
+        "status": "활성",
+        "start_date": "2023-01-05",
+        "end_date": null
+    },
+    {
+        "auto_transfer_id": "AUTO002",
+        "customer_id": "CUST001",
+        "from_account": "123-456-789",
+        "to_account": "123-456-790",
+        "amount": 1000000,
+        "frequency": "월",
+        "day_of_month": 10,
+        "description": "적금 자동이체",
+        "status": "활성",
+        "start_date": "2021-03-10",
+        "end_date": null
+    },
+    {
+        "auto_transfer_id": "AUTO003",
+        "customer_id": "CUST002",
+        "from_account": "234-567-890",
+        "to_account": "444-555-666",
+        "amount": 800000,
+        "frequency": "월",
+        "day_of_month": 15,
+        "description": "카드대금 자동이체",
+        "status": "활성",
+        "start_date": "2022-06-15",
+        "end_date": null
+    },
+    {
+        "auto_transfer_id": "AUTO004",
+        "customer_id": "CUST003",
+        "from_account": "345-678-901",
+        "to_account": "555-666-777",
+        "amount": 300000,
+        "frequency": "월",
+        "day_of_month": 20,
+        "description": "보험료 자동이체",
+        "status": "활성",
+        "start_date": "2023-09-20",
+        "end_date": null
+    }
+] 

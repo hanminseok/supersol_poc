@@ -1,0 +1,46 @@
+[
+    {
+        "transaction_id": "TXN001",
+        "account_number": "123-456-789",
+        "transaction_type": "출금",
+        "amount": 500000,
+        "recipient_account": "987-654-321",
+        "recipient_name": "홍길동",
+        "transaction_date": "2024-01-10 14:30:00",
+        "description": "월세 이체",
+        "status": "완료"
+    },
+    {
+        "transaction_id": "TXN002",
+        "account_number": "123-456-789",
+        "transaction_type": "입금",
+        "amount": 5000000,
+        "sender_account": "111-222-333",
+        "sender_name": "회사",
+        "transaction_date": "2024-01-05 09:00:00",
+        "description": "급여 입금",
+        "status": "완료"
+    },
+    {
+        "transaction_id": "TXN003",
+        "account_number": "234-567-890",
+        "transaction_type": "출금",
+        "amount": 1000000,
+        "recipient_account": "444-555-666",
+        "recipient_name": "카드사",
+        "transaction_date": "2024-01-12 16:45:00",
+        "description": "신용카드 결제",
+        "status": "완료"
+    },
+    {
+        "transaction_id": "TXN004",
+        "account_number": "345-678-901",
+        "transaction_type": "입금",
+        "amount": 3000000,
+        "sender_account": "777-888-999",
+        "sender_name": "부모님",
+        "transaction_date": "2024-01-08 11:20:00",
+        "description": "생활비 지원",
+        "status": "완료"
+    }
+] 

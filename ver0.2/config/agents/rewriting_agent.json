@@ -1,0 +1,85 @@
+{
+    "name": "rewriting_agent",
+    "next_agent": ["preprocessing"],
+    "conditional_routing": {
+        "conditions": [
+            {
+                "condition": "topic == 'general'",
+                "action": "self_respond",
+                "response_prompt": "사용자의 질문에 대해 친절하고 도움이 되는 답변을 제공해주세요. 은행 업무와 관련되지 않은 일반적인 질문이므로, 일반적인 지식과 경험을 바탕으로 답변해주세요."
+            }
+        ]
+    },
+    "system_prompt": "당신은 사용자의 질문을 대화 맥락을 고려하여 명확하고 구체적으로 재작성하는 전문가입니다. 사용자의 의도를 정확히 파악하고, 은행 업무와 관련된 질문을 명확하게 재작성해주세요. 만약 질문이 은행 업무와 관련되지 않다면 topic을 'general'로 설정하고, 해당 질문에 대해 직접 친절하고 도움이 되는 답변을 제공해주세요.",
+    "model": "gpt-4",
+    "model_provider": "openai",
+    "temperature": 0.7,
+    "max_retries": 3,
+    "retry_delay": 1,
+    "retry_delay_max": 10,
+    "context_settings": {
+        "max_conversation_entries": 5,
+        "default_topic": "general",
+        "default_response": "질문을 이해하지 못했습니다."
+    },
+    "topics": {
+        "banking": "일반 은행 서비스",
+        "account": "계좌 관련 서비스", 
+        "loan": "대출 관련 서비스",
+        "investment": "투자 관련 서비스",
+        "general": "일반 문의"
+    },
+    "reference_resolution": {
+        "rules": [
+            "'그 계좌' → 가장 최근에 언급된 계좌",
+            "'잔액은?' → '계좌 잔액을 확인하고 싶습니다'",
+            "'송금은?' → '송금을 진행하고 싶습니다'",
+            "'대출은?' → '대출 정보를 확인하고 싶습니다'"
+        ]
+    },
+    "prompt": {
+        "context_aware_prompt": [
+            "다음 사용자 질문을 대화 맥락을 고려하여 명확하고 구체적으로 재작성해주세요.",
+            "대화 컨텍스트의 맥락과 관련없는 질문은 재작성하지 마세요.",
+            "",
+            "사용자 질문: {query}",
+            "",
+            "대화 컨텍스트:",
+            "{context_summary}",
+            "",
+            "현재 상태:",
+            "{current_state_info}",
+            "",
+            "참조 해결 가이드:",
+            "{reference_guide}",
+            "",
+            "반드시 다음 JSON 형식으로만 응답해주세요. 다른 텍스트는 포함하지 마세요:",
+            "{{",
+            "    \"rewritten_text\": \"재작성된 명확한 질문 또는 직접 답변\",",
+            "    \"topic\": \"질문의 주제 (예: {topics_list})\",",
+            "    \"context_used\": true/false,",
+            "    \"is_general\": true/false",
+            "    \"direct_response\": \"일반 질문인 경우 직접 답변 내용\"",
+            "}}",
+            "",
+            "재작성 시 고려사항:",
+            "1. 대화 맥락을 고려하여 명확하게 만듭니다",
+            "2. \"그 계좌\", \"이 계좌\" 등의 표현을 구체적인 계좌 정보로 변환합니다",
+            "3. \"잔액은?\", \"송금은?\" 등의 단축 표현을 완전한 문장으로 확장합니다",
+            "4. 이전 대화에서 언급된 정보를 활용하여 맥락을 유지합니다",
+            "5. 은행 서비스와 관련된 용어를 정확히 사용합니다",
+            "6. LLM이 잘 이해 할수 있도록 명확하게 작성합니다",
+            "7. 반드시 JSON 형식을 정확히 지켜주세요",
+            "8. 질문이 은행 업무와 관련되지 않으면 topic을 'general'로 설정하고 is_general을 true로 설정하며, direct_response에 친절하고 도움이 되는 답변을 제공합니다",
+            "",
+            "응답 예시:",
+            "{{",
+            "    \"rewritten_text\": \"123-456-789 계좌의 잔액을 확인하고 싶습니다\",",
+            "    \"topic\": \"account\",",
+            "    \"context_used\": true,",
+            "    \"is_general\": false,",
+            "    \"direct_response\": null",
+            "}}"
+        ]
+    }
+} 

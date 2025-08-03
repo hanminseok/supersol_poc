@@ -1,0 +1,62 @@
+[
+    {
+        "product_id": "INV001",
+        "name": "수익증권 펀드 A",
+        "type": "펀드",
+        "category": "주식형",
+        "expected_return": 8.5,
+        "risk_level": "중간",
+        "minimum_amount": 1000000,
+        "management_fee": 1.2,
+        "description": "국내 주식 시장에 투자하는 주식형 펀드",
+        "status": "판매중"
+    },
+    {
+        "product_id": "INV002",
+        "name": "안정형 채권 펀드",
+        "type": "펀드",
+        "category": "채권형",
+        "expected_return": 4.2,
+        "risk_level": "낮음",
+        "minimum_amount": 500000,
+        "management_fee": 0.8,
+        "description": "국채 및 회사채에 투자하는 안정형 펀드",
+        "status": "판매중"
+    },
+    {
+        "product_id": "INV003",
+        "name": "글로벌 ETF",
+        "type": "ETF",
+        "category": "해외주식",
+        "expected_return": 12.0,
+        "risk_level": "높음",
+        "minimum_amount": 500000,
+        "management_fee": 0.5,
+        "description": "글로벌 주식 시장에 투자하는 ETF",
+        "status": "판매중"
+    },
+    {
+        "product_id": "INV004",
+        "name": "부동산 투자신탁",
+        "type": "REITs",
+        "category": "부동산",
+        "expected_return": 6.8,
+        "risk_level": "중간",
+        "minimum_amount": 2000000,
+        "management_fee": 1.5,
+        "description": "상업용 부동산에 투자하는 REITs",
+        "status": "판매중"
+    },
+    {
+        "product_id": "INV005",
+        "name": "골드 ETF",
+        "type": "ETF",
+        "category": "원자재",
+        "expected_return": 5.5,
+        "risk_level": "중간",
+        "minimum_amount": 300000,
+        "management_fee": 0.4,
+        "description": "금에 투자하는 원자재 ETF",
+        "status": "판매중"
+    }
+] 

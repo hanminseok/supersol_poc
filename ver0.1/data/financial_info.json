@@ -1,0 +1,41 @@
+[
+    {
+        "customer_id": "CUST001",
+        "total_assets": 50000000,
+        "total_liabilities": 15000000,
+        "net_worth": 35000000,
+        "monthly_income": 5000000,
+        "monthly_expenses": 3000000,
+        "credit_score": 750,
+        "investment_amount": 20000000,
+        "savings_amount": 10000000,
+        "loan_amount": 15000000,
+        "last_updated": "2024-01-15"
+    },
+    {
+        "customer_id": "CUST002",
+        "total_assets": 30000000,
+        "total_liabilities": 8000000,
+        "net_worth": 22000000,
+        "monthly_income": 4000000,
+        "monthly_expenses": 2500000,
+        "credit_score": 720,
+        "investment_amount": 12000000,
+        "savings_amount": 8000000,
+        "loan_amount": 8000000,
+        "last_updated": "2024-01-15"
+    },
+    {
+        "customer_id": "CUST003",
+        "total_assets": 15000000,
+        "total_liabilities": 5000000,
+        "net_worth": 10000000,
+        "monthly_income": 3000000,
+        "monthly_expenses": 2000000,
+        "credit_score": 680,
+        "investment_amount": 5000000,
+        "savings_amount": 3000000,
+        "loan_amount": 5000000,
+        "last_updated": "2024-01-15"
+    }
+] 

@@ -1,0 +1,101 @@
+# SuperSOL 은행 채팅 서비스 .gitignore
+
+# 환경변수 파일 (보안)
+.env
+.env.local
+.env.production
+.env.staging
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 가상환경
+solenv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# 로그 파일
+logs/
+*.log
+*.log.gz
+
+# 임시 파일
+temp/
+tmp/
+*.tmp
+*.temp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 테스트
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# 데이터베이스
+*.db
+*.sqlite
+*.sqlite3
+
+# 백업 파일
+*.bak
+*.backup
+*.old
+
+# API 키 및 민감한 정보
+*api_key*
+*secret*
+*token*
+*password*
+
+# 문서 생성
+docs/_build/
+site/
+
+# 캐시
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json 

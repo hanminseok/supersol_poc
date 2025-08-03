@@ -1,0 +1,96 @@
+{
+    "name": "supervisor_agent",
+    "type": "supervisor",
+    "description": "질문 분석 및 도메인 라우팅 에이전트",
+    "system_prompt": "당신은 사용자의 질문을 분석하여 적절한 도메인으로 라우팅하는 전문가입니다. 은행 업무 도메인을 정확히 분류하고 라우팅해주세요.",
+    "role": "도메인 라우팅 전문가",
+    "next_agent": ["domain"],
+    "model": "gpt-4",
+    "model_provider": "openai",
+    "temperature": 0.3,
+    "language": "ko",
+    "style": "formal",
+    "max_retries": 3,
+    "retry_delay": 1,
+    "retry_delay_max": 10,
+    "retry_delay_min": 1,
+    "intent_domain_mapping": {
+        "check_balance": "account",
+        "transfer_money": "banking",
+        "loan_inquiry": "loan",
+        "investment_info": "investment",
+        "account_info": "account",
+        "transaction_history": "account",
+        "deposit_history": "account",
+        "auto_transfer_history": "account",
+        "minus_account_info": "account",
+        "isa_account_info": "investment",
+        "mortgage_rate_change": "loan",
+        "fund_info": "investment",
+        "hot_etf_info": "investment",
+        "transfer_limit_change": "account",
+        "frequent_deposit_accounts": "account",
+        "loan_account_status": "loan"
+    },
+    "domains": {
+        "banking": "일반 은행 서비스 (송금, 결제 등)",
+        "account": "계좌 관련 서비스 (잔액 조회, 계좌 정보 등)",
+        "loan": "대출 관련 서비스 (대출 문의, 대출 조건 등)",
+        "investment": "투자 관련 서비스 (투자 상품 정보, 포트폴리오 등)",
+        "general": "일반 문의 서비스"
+    },
+    "default_domain": "general",
+    "context_settings": {
+        "max_conversation_entries": 3
+    },
+    "missing_slots_tools": {
+        "account_number": ["account_lookup"],
+        "balance": ["account_lookup"]
+    },
+    "prompt": {
+        "domain_routing_prompt": [
+            "다음 사용자 질문을 분석하여 적절한 도메인으로 라우팅해주세요.",
+            "",
+            "표준화된 질문: {normalized_text}",
+            "추출된 의도: {intent}",
+            "추출된 슬롯: {slot}",
+            "",
+            "의도-도메인 매핑:",
+            "{intent_domain_mapping_list}",
+            "",
+            "사용 가능한 도메인:",
+            "{domains_list}",
+            "",
+            "반드시 다음 JSON 형식으로만 응답해주세요. 다른 텍스트는 포함하지 마세요:",
+            "{",
+            "    \"target_domain\": \"선택된 도메인\",",
+            "    \"normalized_text\": \"표준화된 질문 텍스트\",",
+            "    \"intent\": \"추출된 의도\",",
+            "    \"slot\": [\"슬롯1\", \"슬롯2\"]",
+            "}",
+            "",
+            "라우팅 시 고려사항:",
+            "1. 의도와 도메인 매핑을 정확히 적용합니다",
+            "2. 가장 적절한 도메인을 선택합니다",
+            "3. 은행 업무 도메인을 정확히 분류합니다",
+            "4. 반드시 JSON 형식을 정확히 지켜주세요"
+        ]
+    },
+    "input_format": {
+        "type": "json",
+        "schema": {
+            "normalized_text": "string",
+            "intent": "string",
+            "slot": ["string"]
+        }
+    },
+    "output_format": {
+        "type": "json",
+        "schema": {
+            "target_domain": "string",
+            "normalized_text": "string",
+            "intent": "string",
+            "slot": ["string"]
+        }
+    }
+} 

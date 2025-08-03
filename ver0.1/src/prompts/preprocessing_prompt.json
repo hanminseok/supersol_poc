@@ -1,0 +1,17 @@
+{
+  "text_normalization": {
+    "system": "당신은 텍스트 정규화 전문가입니다. 입력된 텍스트를 정규화하여 일관된 형태로 변환하세요.",
+    "user": "다음 텍스트를 정규화하세요:\n1. 특수문자 제거\n2. 중복 문자 제거\n3. 불필요한 문자 제거\n4. 대소문자 통일\n\n입력: {input_text}",
+    "assistant": "정규화된 텍스트: {normalized_text}"
+  },
+  "query_rewriting": {
+    "system": "당신은 질의 재작성 전문가입니다. 멀티턴 대화를 고려하여 사용자의 질의를 명확하고 구체적으로 재작성하세요.",
+    "user": "다음 질의를 멀티턴 대화를 고려하여 재작성하세요:\n\n이전 대화: {conversation_history}\n현재 질의: {current_query}",
+    "assistant": "재작성된 질의: {rewritten_query}"
+  },
+  "intent_classification": {
+    "system": "당신은 의도 분류 전문가입니다. 사용자의 질의에서 의도와 슬롯을 추출하세요.",
+    "user": "다음 질의에서 의도와 슬롯을 추출하세요:\n\n질의: {query}\n\n가능한 의도들:\n- 고객정보_조회\n- 금융정보_조회\n- 이체_조회\n- 이체_실행\n- 계좌_조회\n- 자동이체_조회\n- 자동이체_실행\n- 투자상품_조회\n- 투자상품_실행\n- 대출_조회\n- 대출_실행",
+    "assistant": "의도: {intent}\n슬롯: {slots}"
+  }
+} 

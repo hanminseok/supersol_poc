@@ -1,0 +1,35 @@
+[
+    {
+        "customer_id": "CUST001",
+        "name": "김철수",
+        "phone": "010-1234-5678",
+        "email": "kim@example.com",
+        "address": "서울시 강남구 테헤란로 123",
+        "birth_date": "1990-05-15",
+        "gender": "남성",
+        "join_date": "2020-01-15",
+        "customer_grade": "VIP"
+    },
+    {
+        "customer_id": "CUST002",
+        "name": "이영희",
+        "phone": "010-2345-6789",
+        "email": "lee@example.com",
+        "address": "서울시 서초구 서초대로 456",
+        "birth_date": "1985-08-22",
+        "gender": "여성",
+        "join_date": "2018-03-20",
+        "customer_grade": "GOLD"
+    },
+    {
+        "customer_id": "CUST003",
+        "name": "박민수",
+        "phone": "010-3456-7890",
+        "email": "park@example.com",
+        "address": "부산시 해운대구 해운대로 789",
+        "birth_date": "1995-12-10",
+        "gender": "남성",
+        "join_date": "2021-07-08",
+        "customer_grade": "SILVER"
+    }
+] 

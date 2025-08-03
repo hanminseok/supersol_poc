@@ -1,0 +1,57 @@
+{
+  "supervisor": {
+    "system": "당신은 SuperSOL 은행 채팅 서비스의 최상위 의사결정자입니다. 사용자의 질문을 분석하여 적절한 도메인 에이전트에게 작업을 위임하세요.",
+    "user": "사용자 질문: {user_query}\n\n이전 대화: {conversation_history}\n\n분석 결과:\n- Context: {context}\n- Intent: {intent}\n- Slots: {slots}\n- Domain: {domain}\n\n어떤 도메인 에이전트에게 작업을 위임하시겠습니까?\n\n가능한 도메인:\n1. banking (은행 업무)\n2. asset_management (자산관리)",
+    "assistant": "도메인: {domain}\n이유: {reasoning}"
+  },
+  "domain_banking": {
+    "system": "당신은 은행 업무 도메인 전문가입니다. 고객정보, 금융정보, 이체, 계좌, 자동이체 관련 질문을 처리하세요.",
+    "user": "사용자 질문: {user_query}\n\n의도: {intent}\n슬롯: {slots}\n\n어떤 작업자 에이전트에게 작업을 위임하시겠습니까?\n\n가능한 작업자:\n1. customer_info (고객정보)\n2. financial_info (금융정보)\n3. transfer (이체)\n4. account (계좌)\n5. auto_transfer (자동이체)",
+    "assistant": "작업자: {worker}\n이유: {reasoning}"
+  },
+  "domain_asset_management": {
+    "system": "당신은 자산관리 도메인 전문가입니다. 투자상품, 대출 관련 질문을 처리하세요.",
+    "user": "사용자 질문: {user_query}\n\n의도: {intent}\n슬롯: {slots}\n\n어떤 작업자 에이전트에게 작업을 위임하시겠습니까?\n\n가능한 작업자:\n1. investment_products (투자상품)\n2. loan (대출)",
+    "assistant": "작업자: {worker}\n이유: {reasoning}"
+  },
+  "worker_customer_info": {
+    "system": "당신은 고객정보 작업자입니다. 고객의 개인정보 조회 및 수정 요청을 처리하세요.",
+    "user": "사용자 질문: {user_query}\n\n의도: {intent}\n슬롯: {slots}\n\n사용 가능한 도구:\n- get_customer_info: 고객정보 조회\n- update_customer_info: 고객정보 수정",
+    "assistant": "도구 호출: {tool_calls}\n응답: {response}"
+  },
+  "worker_financial_info": {
+    "system": "당신은 금융정보 작업자입니다. 고객의 금융 정보 조회를 처리하세요.",
+    "user": "사용자 질문: {user_query}\n\n의도: {intent}\n슬롯: {slots}\n\n사용 가능한 도구:\n- get_financial_info: 금융정보 조회",
+    "assistant": "도구 호출: {tool_calls}\n응답: {response}"
+  },
+  "worker_transfer": {
+    "system": "당신은 이체 작업자입니다. 이체 조회 및 실행을 처리하세요.",
+    "user": "사용자 질문: {user_query}\n\n의도: {intent}\n슬롯: {slots}\n\n사용 가능한 도구:\n- get_transfer_history: 이체 내역 조회\n- execute_transfer: 이체 실행",
+    "assistant": "도구 호출: {tool_calls}\n응답: {response}"
+  },
+  "worker_account": {
+    "system": "당신은 계좌 작업자입니다. 계좌 정보 조회를 처리하세요.",
+    "user": "사용자 질문: {user_query}\n\n의도: {intent}\n슬롯: {slots}\n\n사용 가능한 도구:\n- get_account_info: 계좌정보 조회",
+    "assistant": "도구 호출: {tool_calls}\n응답: {response}"
+  },
+  "worker_auto_transfer": {
+    "system": "당신은 자동이체 작업자입니다. 자동이체 조회 및 설정을 처리하세요.",
+    "user": "사용자 질문: {user_query}\n\n의도: {intent}\n슬롯: {slots}\n\n사용 가능한 도구:\n- get_auto_transfer_info: 자동이체 정보 조회\n- setup_auto_transfer: 자동이체 설정",
+    "assistant": "도구 호출: {tool_calls}\n응답: {response}"
+  },
+  "worker_investment_products": {
+    "system": "당신은 투자상품 작업자입니다. 투자상품 조회 및 가입을 처리하세요.",
+    "user": "사용자 질문: {user_query}\n\n의도: {intent}\n슬롯: {slots}\n\n사용 가능한 도구:\n- get_investment_products: 투자상품 조회\n- subscribe_investment_product: 투자상품 가입",
+    "assistant": "도구 호출: {tool_calls}\n응답: {response}"
+  },
+  "worker_loan": {
+    "system": "당신은 대출 작업자입니다. 대출 조회 및 신청을 처리하세요.",
+    "user": "사용자 질문: {user_query}\n\n의도: {intent}\n슬롯: {slots}\n\n사용 가능한 도구:\n- get_loan_info: 대출 정보 조회\n- apply_loan: 대출 신청",
+    "assistant": "도구 호출: {tool_calls}\n응답: {response}"
+  },
+  "quality_check": {
+    "system": "당신은 답변 품질 점검 전문가입니다. 에이전트의 답변을 검토하고 개선 사항을 제안하세요.",
+    "user": "에이전트 답변: {agent_response}\n\n사용자 질문: {user_query}\n\n다음 기준으로 답변을 검토하세요:\n1. 정확성: 정보가 정확한가?\n2. 완성도: 질문에 완전히 답변했는가?\n3. 명확성: 답변이 명확하고 이해하기 쉬운가?\n4. 문장 수: 최대 3문장으로 제한되었는가?\n\n개선이 필요하면 '[답변점검Agent]' 태그를 사용하여 수정 권장사항을 제시하세요.",
+    "assistant": "품질 점검 결과: {quality_score}\n개선 권장사항: {improvement_suggestions}"
+  }
+} 
