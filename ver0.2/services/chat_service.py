@@ -4,6 +4,8 @@ import os
 from typing import Dict, Any, Optional, AsyncGenerator
 from services.agent_manager import AgentManager
 from services.session_manager import SessionManager
+from services.response_generator import ResponseGenerator
+from services.session_optimizer import SessionOptimizer
 from utils.logger import service_logger, agent_logger
 from datetime import datetime
 
@@ -11,6 +13,8 @@ class ChatService:
     def __init__(self):
         self.session_manager = SessionManager()
         self.agent_manager = AgentManager()
+        self.session_optimizer = SessionOptimizer()
+        self.response_generator = ResponseGenerator()
         self.logger = service_logger
     
     async def process_chat(self, session_id: str, user_query: str, customer_info: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
@@ -89,6 +93,9 @@ class ChatService:
             except Exception as e:
                 self.logger.error(f"Final response generation failed: {str(e)}")
                 final_response = "죄송합니다. 응답 생성 중 오류가 발생했습니다."
+            
+            # 세션 파일 최적화 (백그라운드에서 실행)
+            asyncio.create_task(self._optimize_session_background(session_id))
             
             # 응답 스트리밍
             async for chunk in self._stream_response(final_response):
@@ -319,256 +326,10 @@ class ChatService:
         """최종 응답 생성 - 컨텍스트를 고려한 개인화된 응답"""
         tool_output = domain_result.get("tool_output", {})
         tool_name = domain_result.get("tool_name", "")
-        
-        # 고객 정보 추출
         customer_info = context.get("customer_info", {})
-        customer_name = customer_info.get("name", "고객") if customer_info else "고객"
         
-        # 현재 상태 정보
-        current_state = context.get("current_state", {})
-        selected_account = current_state.get("selected_account")
-        
-        # 도구 결과에 따른 응답 생성
-        if tool_name == "direct_response":
-            # rewriting_agent에서 생성된 직접 답변 사용
-            if isinstance(tool_output, dict):
-                response = tool_output.get("response", "")
-            else:
-                response = str(tool_output)
-            
-            if response:
-                return response
-            else:
-                return "죄송합니다. 답변을 생성하는 중 오류가 발생했습니다."
-        
-        elif tool_name == "account_balance":
-            balance = tool_output.get("balance", "알 수 없음")
-            account_number = tool_output.get("account_number", selected_account or "현재 계좌")
-            if customer_info:
-                return f"{customer_name}님, {account_number}의 현재 잔액은 {balance}입니다."
-            else:
-                return f"{account_number}의 현재 잔액은 {balance}입니다."
-        
-        elif tool_name == "transfer_money":
-            status = tool_output.get("status", "실패")
-            if status == "success":
-                amount = tool_output.get("amount", "0")
-                recipient = tool_output.get("recipient", "")
-                if customer_info:
-                    return f"{customer_name}님, {recipient}에게 {amount} 송금이 완료되었습니다."
-                else:
-                    return f"{recipient}에게 {amount} 송금이 완료되었습니다."
-            else:
-                return "송금 처리 중 오류가 발생했습니다."
-        
-        elif tool_name == "loan_info":
-            available_amount = tool_output.get("available_loan_amount", "알 수 없음")
-            interest_rate = tool_output.get("interest_rate", "알 수 없음")
-            if customer_info:
-                return f"{customer_name}님, 대출 가능 금액은 {available_amount}이며, 현재 이자율은 {interest_rate}입니다."
-            else:
-                return f"대출 가능 금액은 {available_amount}이며, 현재 이자율은 {interest_rate}입니다."
-        
-        elif tool_name == "investment_info":
-            products = tool_output.get("products", [])
-            rates = tool_output.get("current_rates", {})
-            if customer_info:
-                return f"{customer_name}님, 투자 가능한 상품: {', '.join(products)}. 현재 금리: {rates}"
-            else:
-                return f"투자 가능한 상품: {', '.join(products)}. 현재 금리: {rates}"
-        
-        elif tool_name == "exchange_rate":
-            exchange_rate = tool_output.get("exchange_rate", "알 수 없음")
-            converted_amount = tool_output.get("converted_amount", "알 수 없음")
-            currency = tool_output.get("currency", "")
-            if customer_info:
-                return f"{customer_name}님, {currency} 환율은 {exchange_rate}이며, 환전 금액은 {converted_amount}입니다."
-            else:
-                return f"{currency} 환율은 {exchange_rate}이며, 환전 금액은 {converted_amount}입니다."
-        
-        elif tool_name == "auto_transfer":
-            status = tool_output.get("status", "실패")
-            if status == "success":
-                amount = tool_output.get("amount", "0")
-                schedule = tool_output.get("schedule", "")
-                recipient = tool_output.get("recipient", "")
-                if customer_info:
-                    return f"{customer_name}님, {recipient}에게 {amount} {schedule} 자동이체가 등록되었습니다."
-                else:
-                    return f"{recipient}에게 {amount} {schedule} 자동이체가 등록되었습니다."
-            else:
-                return "자동이체 등록 중 오류가 발생했습니다."
-        
-        elif tool_name == "service_condition":
-            conditions = tool_output.get("conditions", "서비스 이용 조건을 확인해주세요.")
-            requirements = tool_output.get("requirements", [])
-            fees = tool_output.get("fees", "")
-            if customer_info:
-                response = f"{customer_name}님, {conditions}"
-                if requirements:
-                    response += f" 필요 서류: {', '.join(requirements)}"
-                if fees:
-                    response += f" 수수료: {fees}"
-                return response
-            else:
-                response = f"{conditions}"
-                if requirements:
-                    response += f" 필요 서류: {', '.join(requirements)}"
-                if fees:
-                    response += f" 수수료: {fees}"
-                return response
-        
-        elif tool_name == "account_info":
-            account_number = tool_output.get("account_number", "알 수 없음")
-            account_type = tool_output.get("account_type", "알 수 없음")
-            if customer_info:
-                return f"{customer_name}님, 계좌번호: {account_number}, 계좌종류: {account_type}"
-            else:
-                return f"계좌번호: {account_number}, 계좌종류: {account_type}"
-        
-        elif tool_name == "transaction_history":
-            transactions = tool_output.get("transactions", [])
-            if transactions:
-                response = f"최근 거래 내역입니다:\n"
-                for i, tx in enumerate(transactions[:5]):  # 최근 5개만 표시
-                    response += f"{i+1}. {tx.get('date', '')} - {tx.get('type', '')} {tx.get('amount', '')}원\n"
-                return response
-            else:
-                return "거래 내역이 없습니다."
-        
-        elif tool_name == "deposit_history":
-            deposits = tool_output.get("deposits", [])
-            if deposits:
-                response = f"최근 입금 내역입니다:\n"
-                for i, deposit in enumerate(deposits[:5]):  # 최근 5개만 표시
-                    response += f"{i+1}. {deposit.get('date', '')} - {deposit.get('sender', '')} {deposit.get('amount', '')}원\n"
-                return response
-            else:
-                return "입금 내역이 없습니다."
-        
-        elif tool_name == "auto_transfer_history":
-            auto_transfers = tool_output.get("auto_transfers", [])
-            if auto_transfers:
-                response = f"최근 자동이체 내역입니다:\n"
-                for i, transfer in enumerate(auto_transfers[:5]):  # 최근 5개만 표시
-                    response += f"{i+1}. {transfer.get('date', '')} - {transfer.get('recipient', '')} {transfer.get('amount', '')}원\n"
-                return response
-            else:
-                return "자동이체 내역이 없습니다."
-        
-        elif tool_name == "minus_account_info":
-            account_number = tool_output.get("account_number", "알 수 없음")
-            credit_limit = tool_output.get("credit_limit", "알 수 없음")
-            used_amount = tool_output.get("used_amount", "알 수 없음")
-            remaining_limit = tool_output.get("remaining_limit", "알 수 없음")
-            if customer_info:
-                return f"{customer_name}님, {account_number} 마이너스 통장 정보입니다. 신용한도: {credit_limit}원, 사용금액: {used_amount}원, 남은한도: {remaining_limit}원"
-            else:
-                return f"{account_number} 마이너스 통장 정보입니다. 신용한도: {credit_limit}원, 사용금액: {used_amount}원, 남은한도: {remaining_limit}원"
-        
-        elif tool_name == "isa_account_info":
-            account_number = tool_output.get("account_number", "알 수 없음")
-            total_investment = tool_output.get("total_investment", "알 수 없음")
-            current_value = tool_output.get("current_value", "알 수 없음")
-            return_rate = tool_output.get("return_rate", "알 수 없음")
-            if customer_info:
-                return f"{customer_name}님, {account_number} ISA 계좌 정보입니다. 총 투자금: {total_investment}원, 현재 가치: {current_value}원, 수익률: {return_rate}%"
-            else:
-                return f"{account_number} ISA 계좌 정보입니다. 총 투자금: {total_investment}원, 현재 가치: {current_value}원, 수익률: {return_rate}%"
-        
-        elif tool_name == "mortgage_rate_change":
-            changes = tool_output.get("changes", [])
-            if changes:
-                response = f"주택담보대출 금리 변동 내역입니다:\n"
-                for i, change in enumerate(changes[:5]):  # 최근 5개만 표시
-                    response += f"{i+1}. {change.get('date', '')} - {change.get('old_rate', '')}% → {change.get('new_rate', '')}%\n"
-                return response
-            else:
-                return "금리 변동 내역이 없습니다."
-        
-        elif tool_name == "fund_info":
-            fund_name = tool_output.get("fund_name", "알 수 없음")
-            return_rate = tool_output.get("return_rate", "알 수 없음")
-            management_company = tool_output.get("management_company", "알 수 없음")
-            if customer_info:
-                return f"{customer_name}님, {fund_name} 펀드 정보입니다. 수익률: {return_rate}%, 운용사: {management_company}"
-            else:
-                return f"{fund_name} 펀드 정보입니다. 수익률: {return_rate}%, 운용사: {management_company}"
-        
-        elif tool_name == "hot_etf_info":
-            etfs = tool_output.get("etfs", [])
-            if etfs:
-                response = f"인기 ETF 정보입니다:\n"
-                for i, etf in enumerate(etfs[:5]):  # 최근 5개만 표시
-                    response += f"{i+1}. {etf.get('name', '')} - 수익률: {etf.get('return_rate', '')}%\n"
-                return response
-            else:
-                return "인기 ETF 정보가 없습니다."
-        
-        elif tool_name == "transfer_limit_change":
-            changes = tool_output.get("changes", [])
-            if changes:
-                response = f"이체 한도 변경 내역입니다:\n"
-                for i, change in enumerate(changes[:5]):  # 최근 5개만 표시
-                    response += f"{i+1}. {change.get('date', '')} - {change.get('old_limit', '')}원 → {change.get('new_limit', '')}원\n"
-                return response
-            else:
-                return "이체 한도 변경 내역이 없습니다."
-        
-        elif tool_name == "frequent_deposit_accounts":
-            accounts = tool_output.get("accounts", [])
-            if accounts:
-                response = f"자주 입금한 계좌 목록입니다:\n"
-                for i, account in enumerate(accounts[:5]):  # 최근 5개만 표시
-                    response += f"{i+1}. {account.get('account_number', '')} - {account.get('count', '')}회 입금\n"
-                return response
-            else:
-                return "자주 입금한 계좌가 없습니다."
-        
-        elif tool_name == "loan_account_status":
-            accounts = tool_output.get("accounts", [])
-            if accounts:
-                response = f"대출 계좌 상태입니다:\n"
-                for i, account in enumerate(accounts[:5]):  # 최근 5개만 표시
-                    response += f"{i+1}. {account.get('account_number', '')} - 잔액: {account.get('balance', '')}원, 상태: {account.get('status', '')}\n"
-                return response
-            else:
-                return "대출 계좌가 없습니다."
-        
-        # 기본 응답 - 도구 결과가 있는 경우
-        elif tool_output:
-            if isinstance(tool_output, dict):
-                # 도구 결과를 문자열로 변환
-                result_str = str(tool_output)
-                if customer_info:
-                    return f"{customer_name}님, {result_str}"
-                else:
-                    return result_str
-            else:
-                if customer_info:
-                    return f"{customer_name}님, {tool_output}"
-                else:
-                    return str(tool_output)
-        
-        # 기본 응답 - 질문에 대한 일반적인 답변
-        else:
-            if "잔액" in original_query or "계좌" in original_query:
-                return "계좌 잔액을 확인해드리겠습니다. 계좌번호를 알려주시면 정확한 잔액을 조회해드릴 수 있습니다."
-            elif "송금" in original_query or "이체" in original_query:
-                return "송금 서비스를 이용해드리겠습니다. 수신자 정보와 금액을 알려주시면 송금을 진행해드릴 수 있습니다."
-            elif "대출" in original_query:
-                return "대출 정보를 확인해드리겠습니다. 현재 대출 가능 금액과 이자율을 조회해드릴 수 있습니다."
-            elif "환전" in original_query:
-                return "환전 정보를 확인해드리겠습니다. 원하시는 통화와 금액을 알려주시면 환율과 환전 금액을 계산해드릴 수 있습니다."
-            elif "자동이체" in original_query:
-                return "자동이체 서비스를 이용해드리겠습니다. 수신자, 금액, 일정을 알려주시면 자동이체를 등록해드릴 수 있습니다."
-            elif "펀드" in original_query or "투자" in original_query:
-                return "투자 상품 정보를 확인해드리겠습니다. 현재 다양한 펀드와 ETF 상품의 수익률과 정보를 제공해드릴 수 있습니다."
-            else:
-                if customer_info:
-                    return f"{customer_name}님, {original_query}에 대한 답변입니다. 추가로 궁금한 점이 있으시면 언제든 말씀해 주세요."
-                else:
-                    return f"{original_query}에 대한 답변입니다. 추가로 궁금한 점이 있으시면 언제든 말씀해 주세요."
+        # ResponseGenerator를 사용하여 응답 생성
+        return ResponseGenerator.generate_response(tool_name, tool_output, customer_info, context)
     
     async def _stream_response(self, response: str) -> AsyncGenerator[str, None]:
         """응답 스트리밍"""
@@ -604,4 +365,26 @@ class ChatService:
     
     async def clear_session_context(self, session_id: str) -> bool:
         """세션 컨텍스트 초기화"""
-        return await self.session_manager.clear_context(session_id) 
+        return await self.session_manager.clear_context(session_id)
+    
+    async def _optimize_session_background(self, session_id: str) -> None:
+        """백그라운드에서 세션 파일 최적화"""
+        try:
+            await self.session_optimizer.optimize_session_file(session_id)
+        except Exception as e:
+            self.logger.error(f"Background session optimization failed for {session_id}: {str(e)}")
+    
+    async def get_session_optimization_status(self) -> Dict[str, Any]:
+        """세션 최적화 상태 조회"""
+        try:
+            large_sessions = await self.session_optimizer.get_large_sessions()
+            optimization_results = await self.session_optimizer.optimize_all_sessions()
+            
+            return {
+                "large_sessions": large_sessions,
+                "optimization_results": optimization_results,
+                "total_large_sessions": len(large_sessions)
+            }
+        except Exception as e:
+            self.logger.error(f"Failed to get session optimization status: {str(e)}")
+            return {"error": str(e)} 

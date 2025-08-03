@@ -453,6 +453,43 @@ async def health_check():
     """헬스 체크"""
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
+@app.get("/session-optimization")
+async def get_session_optimization_status():
+    """세션 최적화 상태 조회"""
+    try:
+        status = await chat_service.get_session_optimization_status()
+        return status
+    except Exception as e:
+        service_logger.error(f"Failed to get session optimization status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get session optimization status")
+
+@app.post("/session-optimization/run")
+async def run_session_optimization():
+    """세션 최적화 실행"""
+    try:
+        results = await chat_service.session_optimizer.optimize_all_sessions()
+        return {
+            "message": "Session optimization completed",
+            "results": results
+        }
+    except Exception as e:
+        service_logger.error(f"Failed to run session optimization: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to run session optimization")
+
+@app.delete("/session-optimization/cleanup")
+async def cleanup_old_sessions(days: int = 30):
+    """오래된 세션 파일 정리"""
+    try:
+        cleaned_count = await chat_service.session_optimizer.cleanup_old_sessions(days)
+        return {
+            "message": f"Cleaned up {cleaned_count} old sessions",
+            "cleaned_count": cleaned_count,
+            "days": days
+        }
+    except Exception as e:
+        service_logger.error(f"Failed to cleanup old sessions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to cleanup old sessions")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000) 
