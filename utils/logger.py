@@ -4,6 +4,38 @@ import os
 from datetime import datetime
 from Config import Config
 
+def safe_json_serialize(obj):
+    """Circular reference를 방지하는 안전한 JSON 직렬화 함수"""
+    import json
+    from collections import deque
+    
+    def _serialize(obj, visited=None):
+        if visited is None:
+            visited = set()
+        
+        obj_id = id(obj)
+        if obj_id in visited:
+            return f"<circular reference to {type(obj).__name__}>"
+        
+        visited.add(obj_id)
+        
+        try:
+            if isinstance(obj, dict):
+                return {k: _serialize(v, visited) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [_serialize(item, visited) for item in obj]
+            elif isinstance(obj, (str, int, float, bool, type(None))):
+                return obj
+            else:
+                return str(obj)
+        finally:
+            visited.discard(obj_id)
+    
+    try:
+        return json.dumps(_serialize(obj), ensure_ascii=False, indent=2)
+    except Exception as e:
+        return f"<serialization error: {str(e)}>"
+
 class Logger:
     def __init__(self, name):
         self.logger = logging.getLogger(name)
@@ -68,10 +100,9 @@ class Logger:
     
     def log_agent_io(self, agent_name: str, input_data: dict, output_data: dict):
         """Agent 입출력만 기록하는 전용 메서드"""
-        import json
         self.agent_logger.info(f"=== {agent_name} I/O Log ===")
-        self.agent_logger.info(f"Input: {json.dumps(input_data, ensure_ascii=False, indent=2)}")
-        self.agent_logger.info(f"Output: {json.dumps(output_data, ensure_ascii=False, indent=2)}")
+        self.agent_logger.info(f"Input: {safe_json_serialize(input_data)}")
+        self.agent_logger.info(f"Output: {safe_json_serialize(output_data)}")
         self.agent_logger.info("=" * 80)
 
 # 전역 로거 인스턴스

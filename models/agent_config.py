@@ -54,7 +54,7 @@ class AgentConfigManager:
             raise FileNotFoundError(f"Agent config directory not found: {self.config_dir}")
         
         for filename in os.listdir(self.config_dir):
-            if filename.endswith('.json'):
+            if filename.endswith('.json') and filename != 'tools.json':  # tools.json 제외
                 agent_name = filename[:-5]  # .json 제거
                 config_path = os.path.join(self.config_dir, filename)
                 

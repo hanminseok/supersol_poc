@@ -1,0 +1,55 @@
+{
+    "banking_domains": {
+        "banking": "일반 은행 서비스 (송금, 결제 등)",
+        "account": "계좌 관련 서비스 (잔액 조회, 계좌 정보 등)",
+        "loan": "대출 관련 서비스 (대출 문의, 대출 조건 등)",
+        "investment": "투자 관련 서비스 (투자 상품 정보, 포트폴리오 등)",
+        "general": "일반 문의 서비스"
+    },
+    "common_intents": {
+        "check_balance": "잔액 조회",
+        "transfer_money": "송금",
+        "loan_inquiry": "대출 문의",
+        "investment_info": "투자 정보",
+        "account_info": "계좌 정보",
+        "transaction_history": "거래 내역",
+        "deposit_history": "입금 내역",
+        "auto_transfer_history": "자동이체 내역",
+        "minus_account_info": "마이너스 통장 정보",
+        "isa_account_info": "ISA 계좌 정보",
+        "mortgage_rate_change": "모기지 금리 변경",
+        "fund_info": "펀드 정보",
+        "hot_etf_info": "인기 ETF 정보",
+        "transfer_limit_change": "이체 한도 변경",
+        "frequent_deposit_accounts": "자주 입금한 계좌",
+        "loan_account_status": "대출 계좌 상태",
+        "general_inquiry": "일반 문의"
+    },
+    "common_topics": {
+        "banking": "일반 은행 서비스",
+        "account": "계좌 관련 서비스",
+        "loan": "대출 관련 서비스",
+        "investment": "투자 관련 서비스",
+        "general": "일반 문의"
+    },
+    "context_settings": {
+        "max_conversation_entries": 3,
+        "default_topic": "general",
+        "default_intent": "general_inquiry",
+        "default_domain": "general",
+        "default_tool": "general_inquiry"
+    },
+    "reference_resolution": {
+        "rules": [
+            "'그 계좌' → 가장 최근에 언급된 계좌",
+            "'잔액은?' → '계좌 잔액을 확인하고 싶습니다'",
+            "'송금은?' → '송금을 진행하고 싶습니다'",
+            "'대출은?' → '대출 정보를 확인하고 싶습니다'"
+        ]
+    },
+    "default_responses": {
+        "empty_query": "질문을 이해하지 못했습니다.",
+        "json_parse_error": "응답을 처리하는 중 오류가 발생했습니다.",
+        "tool_not_found": "요청하신 서비스를 찾을 수 없습니다."
+    }
+} 

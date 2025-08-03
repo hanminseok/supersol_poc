@@ -14,10 +14,30 @@
     "retry_delay": 1,
     "retry_delay_max": 10,
     "retry_delay_min": 1,
+    "context_settings": {
+        "max_conversation_entries": 3,
+        "default_topic": "general",
+        "default_response": "질문을 이해하지 못했습니다."
+    },
+    "topics": {
+        "banking": "일반 은행 서비스",
+        "account": "계좌 관련 서비스", 
+        "loan": "대출 관련 서비스",
+        "investment": "투자 관련 서비스",
+        "general": "일반 문의"
+    },
+    "reference_resolution": {
+        "rules": [
+            "'그 계좌' → 가장 최근에 언급된 계좌",
+            "'잔액은?' → '계좌 잔액을 확인하고 싶습니다'",
+            "'송금은?' → '송금을 진행하고 싶습니다'",
+            "'대출은?' → '대출 정보를 확인하고 싶습니다'"
+        ]
+    },
     "input_format": {
         "type": "json",
         "schema": {
-            "query": ["string"]
+            "query": "string"
         }
     },
     "output_format": {

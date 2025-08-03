@@ -1,6 +1,7 @@
 import asyncio
 import json
 import time
+import os
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List
 import openai
@@ -8,6 +9,7 @@ import deepinfra
 from Config import Config
 from utils.logger import agent_logger
 from models.agent_config import AgentConfig
+from utils.mock_llm import MockLLMClient
 
 class BaseAgent(ABC):
     def __init__(self, config: AgentConfig):
@@ -17,6 +19,12 @@ class BaseAgent(ABC):
     
     def _setup_client(self):
         """API 클라이언트 설정"""
+        # 테스트 모드 확인
+        if os.getenv('TEST_MODE', 'false').lower() == 'true' or Config.OPENAI_API_KEY == 'your_openai_api_key_here':
+            # 테스트 모드에서는 모의 클라이언트 사용
+            self.client = MockLLMClient()
+            return
+        
         if self.config.model_provider == "openai":
             # OpenAI 클라이언트 설정
             try:

@@ -328,7 +328,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    """HTTP 채팅 엔드포인트"""
+    """HTTP 채팅 엔드포인트 - 멀티턴 질의 지원"""
     try:
         response_chunks = []
         async for chunk in chat_service.process_chat(
@@ -346,7 +346,7 @@ async def chat_endpoint(request: ChatRequest):
 
 @app.get("/sessions")
 async def get_sessions():
-    """세션 목록 조회"""
+    """세션 목록 조회 - 컨텍스트 정보 포함"""
     try:
         sessions = await chat_service.get_session_list()
         return {"sessions": sessions}
@@ -356,7 +356,7 @@ async def get_sessions():
 
 @app.get("/sessions/{session_id}")
 async def get_session_info(session_id: str):
-    """세션 정보 조회"""
+    """세션 정보 조회 - 컨텍스트 정보 포함"""
     try:
         session_info = await chat_service.get_session_info(session_id)
         if not session_info:
@@ -380,6 +380,48 @@ async def delete_session(session_id: str):
         raise
     except Exception as e:
         service_logger.error(f"세션 삭제 오류: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/sessions/{session_id}/context")
+async def get_session_context(session_id: str):
+    """세션 컨텍스트 정보 조회"""
+    try:
+        context = await chat_service.get_session_context(session_id)
+        if context is None:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return {"context": context}
+    except HTTPException:
+        raise
+    except Exception as e:
+        service_logger.error(f"세션 컨텍스트 조회 오류: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/sessions/{session_id}/context")
+async def update_session_context(session_id: str, context_updates: Dict[str, Any]):
+    """세션 컨텍스트 업데이트"""
+    try:
+        success = await chat_service.update_session_context(session_id, context_updates)
+        if not success:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return {"message": "Context updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        service_logger.error(f"세션 컨텍스트 업데이트 오류: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/sessions/{session_id}/context")
+async def clear_session_context(session_id: str):
+    """세션 컨텍스트 초기화"""
+    try:
+        success = await chat_service.clear_session_context(session_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return {"message": "Context cleared successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        service_logger.error(f"세션 컨텍스트 초기화 오류: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/customers")

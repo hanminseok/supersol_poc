@@ -1,0 +1,630 @@
+{
+    "tools": {
+        "account_balance": {
+            "description": "계좌 잔액 조회",
+            "response_format": {
+                "balance": "string",
+                "currency": "string",
+                "last_updated": "string"
+            },
+            "sample_response": {
+                "balance": "1,000,000원",
+                "currency": "KRW",
+                "last_updated": "2024-01-15 14:30:00"
+            }
+        },
+        "transfer_money": {
+            "description": "송금 처리",
+            "response_format": {
+                "status": "string",
+                "transaction_id": "string",
+                "amount": "string",
+                "recipient": "string"
+            },
+            "sample_response": {
+                "status": "success",
+                "transaction_id": "TXN123456789",
+                "amount": "0",
+                "recipient": ""
+            }
+        },
+        "loan_info": {
+            "description": "대출 정보 조회",
+            "response_format": {
+                "available_loan_amount": "string",
+                "interest_rate": "string",
+                "loan_types": ["string"]
+            },
+            "sample_response": {
+                "available_loan_amount": "50,000,000원",
+                "interest_rate": "3.5%",
+                "loan_types": ["신용대출", "담보대출", "전세자금대출"]
+            }
+        },
+        "investment_info": {
+            "description": "투자 정보 조회",
+            "response_format": {
+                "products": ["string"],
+                "current_rates": {"string": "string"}
+            },
+            "sample_response": {
+                "products": ["정기예금", "펀드", "주식", "채권"],
+                "current_rates": {"정기예금": "2.5%", "펀드": "5-8%"}
+            }
+        },
+        "account_info": {
+            "description": "계좌 정보 조회",
+            "response_format": {
+                "account_number": "string",
+                "account_type": "string",
+                "opening_date": "string"
+            },
+            "sample_response": {
+                "account_number": "123-456-789",
+                "account_type": "입출금통장",
+                "opening_date": "2020-01-15"
+            }
+        },
+        "transaction_history": {
+            "description": "거래 내역 조회",
+            "response_format": {
+                "transactions": [
+                    {
+                        "date": "string",
+                        "type": "string",
+                        "amount": "string",
+                        "sender": "string",
+                        "description": "string"
+                    }
+                ],
+                "total_count": "number"
+            },
+            "sample_response": {
+                "transactions": [
+                    {
+                        "date": "2024-01-15",
+                        "type": "입금",
+                        "amount": "500,000원",
+                        "sender": "김철수",
+                        "description": "급여"
+                    },
+                    {
+                        "date": "2024-01-14",
+                        "type": "출금",
+                        "amount": "100,000원",
+                        "recipient": "ATM",
+                        "description": "현금출금"
+                    },
+                    {
+                        "date": "2024-01-13",
+                        "type": "입금",
+                        "amount": "200,000원",
+                        "sender": "이영희",
+                        "description": "환불"
+                    }
+                ],
+                "total_count": 3
+            }
+        },
+        "deposit_history": {
+            "description": "입금 내역 조회",
+            "response_format": {
+                "deposits": [
+                    {
+                        "date": "string",
+                        "amount": "string",
+                        "sender": "string",
+                        "sender_account": "string",
+                        "description": "string",
+                        "time": "string"
+                    }
+                ],
+                "total_count": "number",
+                "total_amount": "string"
+            },
+            "sample_response": {
+                "deposits": [
+                    {
+                        "date": "2024-01-15",
+                        "amount": "500,000원",
+                        "sender": "김철수",
+                        "sender_account": "123-456-001",
+                        "description": "급여",
+                        "time": "09:30:15"
+                    },
+                    {
+                        "date": "2024-01-13",
+                        "amount": "200,000원",
+                        "sender": "이영희",
+                        "sender_account": "987-654-321",
+                        "description": "환불",
+                        "time": "14:22:45"
+                    },
+                    {
+                        "date": "2024-01-10",
+                        "amount": "1,000,000원",
+                        "sender": "박민수",
+                        "sender_account": "111-222-333",
+                        "description": "이체",
+                        "time": "16:15:30"
+                    }
+                ],
+                "total_count": 3,
+                "total_amount": "1,700,000원"
+            }
+        },
+        "auto_transfer_history": {
+            "description": "자동이체 내역 조회",
+            "response_format": {
+                "auto_transfers": [
+                    {
+                        "date": "string",
+                        "type": "string",
+                        "amount": "string",
+                        "recipient": "string",
+                        "description": "string",
+                        "status": "string"
+                    }
+                ],
+                "total_count": "number",
+                "total_amount": "string"
+            },
+            "sample_response": {
+                "auto_transfers": [
+                    {
+                        "date": "2024-01-15",
+                        "type": "출금",
+                        "amount": "50,000원",
+                        "recipient": "카드값",
+                        "description": "신용카드 자동이체",
+                        "status": "완료"
+                    },
+                    {
+                        "date": "2024-01-10",
+                        "type": "출금",
+                        "amount": "300,000원",
+                        "recipient": "월세",
+                        "description": "월세 자동이체",
+                        "status": "완료"
+                    },
+                    {
+                        "date": "2024-01-05",
+                        "type": "출금",
+                        "amount": "100,000원",
+                        "recipient": "보험료",
+                        "description": "생명보험 자동이체",
+                        "status": "완료"
+                    }
+                ],
+                "total_count": 3,
+                "total_amount": "450,000원"
+            }
+        },
+        "minus_account_info": {
+            "description": "마이너스 통장 정보 조회",
+            "response_format": {
+                "account_number": "string",
+                "account_type": "string",
+                "credit_limit": "string",
+                "used_amount": "string",
+                "remaining_limit": "string",
+                "interest_rate": "string",
+                "next_interest_date": "string",
+                "current_balance": "string"
+            },
+            "sample_response": {
+                "account_number": "123-456-789",
+                "account_type": "마이너스 통장",
+                "credit_limit": "10,000,000원",
+                "used_amount": "3,500,000원",
+                "remaining_limit": "6,500,000원",
+                "interest_rate": "5.5%",
+                "next_interest_date": "2024-02-15",
+                "current_balance": "-3,500,000원"
+            }
+        },
+        "isa_account_info": {
+            "description": "ISA 계좌 정보 조회",
+            "response_format": {
+                "account_number": "string",
+                "account_type": "string",
+                "total_balance": "string",
+                "invested_amount": "string",
+                "current_profit": "string",
+                "profit_rate": "string",
+                "annual_return": "string",
+                "investment_products": [
+                    {
+                        "name": "string",
+                        "amount": "string",
+                        "profit": "string",
+                        "profit_rate": "string"
+                    }
+                ]
+            },
+            "sample_response": {
+                "account_number": "ISA-001-234",
+                "account_type": "ISA 계좌",
+                "total_balance": "15,000,000원",
+                "invested_amount": "12,000,000원",
+                "current_profit": "3,000,000원",
+                "profit_rate": "25.0%",
+                "annual_return": "8.5%",
+                "investment_products": [
+                    {
+                        "name": "TIGER AI반도체 ETF",
+                        "amount": "5,000,000원",
+                        "profit": "1,200,000원",
+                        "profit_rate": "31.6%"
+                    },
+                    {
+                        "name": "미국 S&P 500 ETF",
+                        "amount": "4,000,000원",
+                        "profit": "800,000원",
+                        "profit_rate": "25.0%"
+                    },
+                    {
+                        "name": "한국 KOSPI ETF",
+                        "amount": "3,000,000원",
+                        "profit": "1,000,000원",
+                        "profit_rate": "50.0%"
+                    }
+                ]
+            }
+        },
+        "mortgage_rate_change": {
+            "description": "주택담보대출 금리 변동 조회",
+            "response_format": {
+                "loan_type": "string",
+                "current_rate": "string",
+                "previous_rate": "string",
+                "change_amount": "string",
+                "change_date": "string",
+                "change_reason": "string",
+                "rate_history": [
+                    {
+                        "date": "string",
+                        "rate": "string",
+                        "change": "string"
+                    }
+                ]
+            },
+            "sample_response": {
+                "loan_type": "주택담보대출",
+                "current_rate": "3.8%",
+                "previous_rate": "4.2%",
+                "change_amount": "-0.4%",
+                "change_date": "2024-01-10",
+                "change_reason": "중앙은행 기준금리 인하",
+                "rate_history": [
+                    {
+                        "date": "2024-01-10",
+                        "rate": "3.8%",
+                        "change": "-0.4%"
+                    },
+                    {
+                        "date": "2023-12-15",
+                        "rate": "4.2%",
+                        "change": "+0.2%"
+                    },
+                    {
+                        "date": "2023-11-20",
+                        "rate": "4.0%",
+                        "change": "+0.1%"
+                    }
+                ]
+            }
+        },
+        "fund_info": {
+            "description": "펀드 수익률 및 운용사 정보 조회",
+            "response_format": {
+                "total_fund_count": "number",
+                "total_investment": "string",
+                "total_profit": "string",
+                "average_profit_rate": "string",
+                "funds": [
+                    {
+                        "name": "string",
+                        "company": "string",
+                        "investment_amount": "string",
+                        "current_value": "string",
+                        "profit": "string",
+                        "profit_rate": "string",
+                        "risk_level": "string"
+                    }
+                ]
+            },
+            "sample_response": {
+                "total_fund_count": 5,
+                "total_investment": "25,000,000원",
+                "total_profit": "2,500,000원",
+                "average_profit_rate": "10.0%",
+                "funds": [
+                    {
+                        "name": "미래에셋 글로벌 테크 펀드",
+                        "company": "미래에셋자산운용",
+                        "investment_amount": "8,000,000원",
+                        "current_value": "9,200,000원",
+                        "profit": "1,200,000원",
+                        "profit_rate": "15.0%",
+                        "risk_level": "중위험"
+                    },
+                    {
+                        "name": "KB국민 글로벌 주식 펀드",
+                        "company": "KB자산운용",
+                        "investment_amount": "6,000,000원",
+                        "current_value": "6,600,000원",
+                        "profit": "600,000원",
+                        "profit_rate": "10.0%",
+                        "risk_level": "중위험"
+                    },
+                    {
+                        "name": "신한 글로벌 채권 펀드",
+                        "company": "신한자산운용",
+                        "investment_amount": "5,000,000원",
+                        "current_value": "5,250,000원",
+                        "profit": "250,000원",
+                        "profit_rate": "5.0%",
+                        "risk_level": "저위험"
+                    },
+                    {
+                        "name": "NH농협 글로벌 부동산 펀드",
+                        "company": "NH투자증권",
+                        "investment_amount": "4,000,000원",
+                        "current_value": "4,400,000원",
+                        "profit": "400,000원",
+                        "profit_rate": "10.0%",
+                        "risk_level": "중위험"
+                    },
+                    {
+                        "name": "하나 글로벌 원자재 펀드",
+                        "company": "하나자산운용",
+                        "investment_amount": "2,000,000원",
+                        "current_value": "2,050,000원",
+                        "profit": "50,000원",
+                        "profit_rate": "2.5%",
+                        "risk_level": "고위험"
+                    }
+                ]
+            }
+        },
+        "hot_etf_info": {
+            "description": "인기 ETF 정보 조회",
+            "response_format": {
+                "market_trend": "string",
+                "top_etfs": [
+                    {
+                        "name": "string",
+                        "ticker": "string",
+                        "current_price": "string",
+                        "daily_change": "string",
+                        "monthly_return": "string",
+                        "yearly_return": "string",
+                        "volume": "string",
+                        "category": "string"
+                    }
+                ]
+            },
+            "sample_response": {
+                "market_trend": "AI 반도체 및 기술주 중심의 상승세",
+                "top_etfs": [
+                    {
+                        "name": "TIGER AI반도체 ETF",
+                        "ticker": "233740",
+                        "current_price": "45,200원",
+                        "daily_change": "+2.8%",
+                        "monthly_return": "+15.3%",
+                        "yearly_return": "+45.2%",
+                        "volume": "높음",
+                        "category": "AI/반도체"
+                    },
+                    {
+                        "name": "KODEX 2차전지산업 ETF",
+                        "ticker": "305720",
+                        "current_price": "32,800원",
+                        "daily_change": "+1.5%",
+                        "monthly_return": "+8.7%",
+                        "yearly_return": "+28.9%",
+                        "volume": "높음",
+                        "category": "2차전지"
+                    },
+                    {
+                        "name": "TIGER 미국나스닥100 ETF",
+                        "ticker": "233130",
+                        "current_price": "28,500원",
+                        "daily_change": "+1.2%",
+                        "monthly_return": "+6.2%",
+                        "yearly_return": "+22.1%",
+                        "volume": "중간",
+                        "category": "미국기술주"
+                    },
+                    {
+                        "name": "KODEX 미국S&P500선물 ETF",
+                        "ticker": "143850",
+                        "current_price": "15,200원",
+                        "daily_change": "+0.8%",
+                        "monthly_return": "+4.1%",
+                        "yearly_return": "+18.5%",
+                        "volume": "높음",
+                        "category": "미국주식"
+                    },
+                    {
+                        "name": "TIGER 중국항셍테크 ETF",
+                        "ticker": "305080",
+                        "current_price": "12,800원",
+                        "daily_change": "+3.2%",
+                        "monthly_return": "+12.8%",
+                        "yearly_return": "+35.6%",
+                        "volume": "중간",
+                        "category": "중국기술주"
+                    }
+                ]
+            }
+        },
+        "transfer_limit_change": {
+            "description": "이체 한도 변경 기록 조회",
+            "response_format": {
+                "current_limit": "string",
+                "limit_changes": [
+                    {
+                        "date": "string",
+                        "previous_limit": "string",
+                        "new_limit": "string",
+                        "change_amount": "string",
+                        "reason": "string",
+                        "status": "string"
+                    }
+                ],
+                "total_changes": "number"
+            },
+            "sample_response": {
+                "current_limit": "10,000,000원",
+                "limit_changes": [
+                    {
+                        "date": "2024-01-12",
+                        "previous_limit": "5,000,000원",
+                        "new_limit": "10,000,000원",
+                        "change_amount": "+5,000,000원",
+                        "reason": "고객 요청",
+                        "status": "승인됨"
+                    },
+                    {
+                        "date": "2023-12-20",
+                        "previous_limit": "3,000,000원",
+                        "new_limit": "5,000,000원",
+                        "change_amount": "+2,000,000원",
+                        "reason": "자동 한도 상향",
+                        "status": "승인됨"
+                    }
+                ],
+                "total_changes": 2
+            }
+        },
+        "frequent_deposit_accounts": {
+            "description": "자주 입금한 계좌 목록 조회",
+            "response_format": {
+                "frequent_accounts": [
+                    {
+                        "account_number": "string",
+                        "account_holder": "string",
+                        "bank_name": "string",
+                        "deposit_count": "number",
+                        "total_amount": "string",
+                        "last_deposit_date": "string",
+                        "frequency": "string"
+                    }
+                ],
+                "total_accounts": "number"
+            },
+            "sample_response": {
+                "frequent_accounts": [
+                    {
+                        "account_number": "123-456-001",
+                        "account_holder": "김철수",
+                        "bank_name": "신한은행",
+                        "deposit_count": 15,
+                        "total_amount": "7,500,000원",
+                        "last_deposit_date": "2024-01-15",
+                        "frequency": "매주"
+                    },
+                    {
+                        "account_number": "987-654-321",
+                        "account_holder": "이영희",
+                        "bank_name": "국민은행",
+                        "deposit_count": 8,
+                        "total_amount": "2,400,000원",
+                        "last_deposit_date": "2024-01-13",
+                        "frequency": "월 2-3회"
+                    },
+                    {
+                        "account_number": "111-222-333",
+                        "account_holder": "박민수",
+                        "bank_name": "우리은행",
+                        "deposit_count": 5,
+                        "total_amount": "5,000,000원",
+                        "last_deposit_date": "2024-01-10",
+                        "frequency": "월 1-2회"
+                    },
+                    {
+                        "account_number": "555-666-777",
+                        "account_holder": "최지영",
+                        "bank_name": "하나은행",
+                        "deposit_count": 3,
+                        "total_amount": "900,000원",
+                        "last_deposit_date": "2024-01-08",
+                        "frequency": "월 1회"
+                    }
+                ],
+                "total_accounts": 4
+            }
+        },
+        "loan_account_status": {
+            "description": "대출 계좌 상태 조회",
+            "response_format": {
+                "total_loan_accounts": "number",
+                "active_accounts": "number",
+                "closed_accounts": "number",
+                "loan_accounts": [
+                    {
+                        "account_number": "string",
+                        "loan_type": "string",
+                        "status": "string",
+                        "balance": "string",
+                        "interest_rate": "string",
+                        "opening_date": "string",
+                        "closing_date": "string|null"
+                    }
+                ]
+            },
+            "sample_response": {
+                "total_loan_accounts": 3,
+                "active_accounts": 2,
+                "closed_accounts": 1,
+                "loan_accounts": [
+                    {
+                        "account_number": "LOAN-001-234",
+                        "loan_type": "신용대출",
+                        "status": "활성",
+                        "balance": "15,000,000원",
+                        "interest_rate": "4.2%",
+                        "opening_date": "2023-06-15",
+                        "closing_date": null
+                    },
+                    {
+                        "account_number": "LOAN-002-345",
+                        "loan_type": "담보대출",
+                        "status": "활성",
+                        "balance": "50,000,000원",
+                        "interest_rate": "3.8%",
+                        "opening_date": "2023-03-20",
+                        "closing_date": null
+                    },
+                    {
+                        "account_number": "LOAN-003-456",
+                        "loan_type": "전세자금대출",
+                        "status": "해지",
+                        "balance": "0원",
+                        "interest_rate": "3.5%",
+                        "opening_date": "2022-09-10",
+                        "closing_date": "2024-01-05"
+                    }
+                ]
+            }
+        },
+        "general_inquiry": {
+            "description": "일반 문의 처리",
+            "response_format": {
+                "response": "string",
+                "category": "string"
+            },
+            "sample_response": {
+                "response": "일반 문의에 대한 답변입니다.",
+                "category": "general"
+            }
+        }
+    },
+    "default_error_response": {
+        "error": "Unknown tool",
+        "message": "요청하신 도구를 찾을 수 없습니다."
+    }
+} 
